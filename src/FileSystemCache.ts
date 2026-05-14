@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import { R, Util, hashAlgorithms, type t } from './common/index';
+import { R, Util, hashAlgorithms, type t } from './common/index.ts';
 
 /**
  * A cache that read/writes to a specific part of the file-system.

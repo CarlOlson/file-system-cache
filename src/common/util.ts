@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as fsp from 'node:fs/promises';
-import { type t } from '../common.t';
-import { R, crypto, fsPath } from './libs';
+import type { t } from '../common.t';
+import { R, crypto, fsPath } from './libs.ts';
 
 export const isNothing = (value: any) => R.isNil(value) || R.isEmpty(value);
 export const isString = R.is(String);

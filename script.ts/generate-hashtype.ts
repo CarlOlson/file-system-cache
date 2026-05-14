@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 
-import { crypto, fsPath } from '../src/common';
+import { crypto, fsPath } from '../src/common/index.ts';
 
 const HashUnionType = {
   /**
@@ -25,14 +25,14 @@ const HashUnionType = {
  * See:
  *    - generator:  script.ts/generate-hashtype.ts
  *    - command:    yarn run gen:hashtype
- */    
+ */
 `
       .substring(1)
       .slice(0, -1);
 
     const { type, constants } = HashUnionType.generate();
     const typeDef = `${header}\n${type}\n`;
-    const importT = `import { type t } from '../common.t';`;
+    const importT = `import type { t } from '../common.t';`;
     const constDef = `${header}\n${importT}\n\n${constants}\n`;
 
     fs.writeFileSync(fsPath.resolve('./src/types.hashes.ts'), typeDef);

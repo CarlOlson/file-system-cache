@@ -1,7 +1,7 @@
-import * as Util from './util';
+import * as Util from './util.ts';
 
-export * from './const.hashes';
-export * from './libs';
+export * from './const.hashes.ts';
+export * from './libs.ts';
 export { Util };
 
-export { type t } from '../common.t';
+export type { t } from '../common.t';

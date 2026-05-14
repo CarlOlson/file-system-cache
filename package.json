@@ -34,7 +34,7 @@
   "scripts": {
     "build": "tsup src/index.ts --clean --minify --dts --format esm --out-dir lib --treeshake",
     "format": "prettier ./src --write",
-    "gen:hashtype": "tsx ./script.ts/generate-hashtype.ts",
+    "gen:hashtype": "node ./script.ts/generate-hashtype.ts",
     "prepublish": "npm test && npm run build",
     "test": "vitest"
   },
@@ -46,7 +46,6 @@
     "prettier": "^3.3.3",
     "ramda": "^0.30.1",
     "tsup": "^8.1.0",
-    "tsx": "^4.16.2",
     "typescript": "^5.5.3",
     "vitest": "^2.0.3"
   },
