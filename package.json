@@ -33,14 +33,17 @@
   ],
   "scripts": {
     "build": "tsdown src/index.ts --clean --minify --dts --out-dir lib",
-    "format": "prettier ./src --write",
+    "check": "biome check",
+    "check:fix": "biome check --write",
+    "format": "biome format --write",
     "gen:hashtype": "node ./script.ts/generate-hashtype.ts",
+    "lint": "biome lint",
     "prepublish": "npm test && npm run build",
     "test": "node --test src/test/*.TEST.ts"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
     "@types/node": "^24",
-    "prettier": "^3.3.3",
     "tsdown": "^0.22.0",
     "typescript": "^6"
   },

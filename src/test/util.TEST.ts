@@ -36,7 +36,7 @@ describe('common/util', () => {
   describe('util.hash (generator)', () => {
     it('hashes constant matches node', () => {
       const hashes = crypto.getHashes();
-      FileSystemCache.hashAlgorithms.forEach((name) => assert.ok(hashes.includes(name)));
+      for (const name of FileSystemCache.hashAlgorithms) assert.ok(hashes.includes(name));
     });
   });
 });

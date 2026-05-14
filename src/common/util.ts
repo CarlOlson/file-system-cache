@@ -43,7 +43,7 @@ export const hash = (algorithm: t.HashAlgorithm, values: string | string[]) => {
   const parts = Array.isArray(values) ? values : [values];
   if (parts.length === 0) return undefined;
   const resultHash = crypto.createHash(algorithm);
-  parts.forEach((value) => resultHash.update(value));
+  for (const value of parts) resultHash.update(value);
   return resultHash.digest('hex');
 };
 
@@ -91,6 +91,6 @@ export const toJson = (value: any, ttl: number) =>
  * Check's a cache item to see if it has expired.
  */
 export const isExpired = (data: any) => {
-  const timeElapsed = (new Date().getTime() - new Date(data.created).getTime()) / 1000;
+  const timeElapsed = (Date.now() - new Date(data.created).getTime()) / 1000;
   return timeElapsed > data.ttl && data.ttl > 0;
 };

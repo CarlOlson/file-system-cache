@@ -19,7 +19,7 @@ export class FileSystemCache {
    */
   readonly tmpDir?: fs.DisposableTempDir;
   readonly basePath: string;
-  readonly ns?: any;
+  readonly ns?: t.Namespace;
   readonly extension?: string;
   readonly hash: t.HashAlgorithm;
   readonly ttl: number;
