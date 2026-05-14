@@ -18,7 +18,7 @@ describe('FileSystemCache', () => {
     });
 
     it('throw: hash not supported', () => {
-      const hash = '404-no-exist' as any;
+      const hash = '404-no-exist' as t.HashAlgorithm;
       assert.throws(() => new FileSystemCache({ hash }), /Hash does not exist/);
     });
   });
@@ -49,8 +49,7 @@ describe('FileSystemCache', () => {
   describe('ns (namespace)', () => {
     it('has no namespace by default', () => {
       assert.equal(new FileSystemCache().ns, undefined);
-      assert.equal(new FileSystemCache([] as any).ns, undefined);
-      assert.equal(new FileSystemCache([null, undefined] as any).ns, undefined);
+      assert.equal(new FileSystemCache({}).ns, undefined);
     });
 
     it('creates a namespace hash with a single value', () => {
@@ -76,7 +75,7 @@ describe('FileSystemCache', () => {
   describe('path', () => {
     it('throws if no key is provided', () => {
       const cache = new FileSystemCache();
-      assert.throws(() => (cache as any).path());
+      assert.throws(() => cache.path(undefined as unknown as string));
     });
 
     it('returns a path with no namespace', () => {

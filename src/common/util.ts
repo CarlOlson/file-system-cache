@@ -29,9 +29,12 @@ export const filePathsP = async (basePath: string, ns?: string): Promise<string[
       .filter((name) => (ns ? name.startsWith(ns) : true))
       .filter((name) => (!ns ? !name.includes('-') : true))
       .map((name) => `${basePath}/${name}`);
-  } catch (error: any) {
-    if (error.code === 'ENOENT') return [];
-    throw error;
+  } catch (error) {
+    if (isErrnoException(error) && error.code === 'ENOENT') {
+      return [];
+    } else {
+      throw error;
+    }
   }
 };
 
@@ -54,43 +57,54 @@ export const hashExists = (algorithm: t.HashAlgorithm) => {
 /**
  * Retrieve a value from the given path.
  */
-export async function getValueP(path: string, defaultValue?: any) {
+export async function getValueP<T>(path: string, defaultValue?: T): Promise<T | undefined> {
   try {
-    return toGetValue(JSON.parse(await fsp.readFile(path, 'utf8')));
-  } catch (error: any) {
-    if (error.code === 'ENOENT') return defaultValue;
-    if (error.message === 'Cache item has expired.') {
-      fs.rmSync(path, { force: true });
+    return toGetValue(await fsp.readFile(path, 'utf8')) as T;
+  } catch (error) {
+    if (isErrnoException(error) && error.code === 'ENOENT') {
       return defaultValue;
+    } else if (error instanceof Error) {
+      throw new Error(`Failed to read cache value at: ${path}. ${error.message}`);
+    } else {
+      throw error;
     }
-    throw new Error(`Failed to read cache value at: ${path}. ${error.message}`);
   }
 }
 
+type CacheEntry = {
+  value: unknown;
+  type: string;
+  created: string;
+  ttl: number;
+};
+
 /**
- * Format value structure.
+ * Parse a cache entry's file contents and unwrap the stored value.
  */
-export const toGetValue = (data: any) => {
+export const toGetValue = (text: string): unknown => {
+  const data = JSON.parse(text) as CacheEntry;
   if (isExpired(data)) return undefined;
-  if (data.type === 'Date') return new Date(data.value);
+  if (data.type === 'Date') return new Date(data.value as string);
   return data.value;
 };
 
 /**
  * Stringify a value into JSON.
  */
-export const toJson = (value: any, ttl: number) =>
-  JSON.stringify({
+export function toJson<T>(value: T, ttl: number): string {
+  return JSON.stringify({
     value,
     type: Object.prototype.toString.call(value).slice(8, -1),
     created: new Date(),
     ttl,
   });
+}
 
-/**
- * Check's a cache item to see if it has expired.
- */
-export const isExpired = (data: any) => {
+const isExpired = (data: CacheEntry): boolean => {
   const timeElapsed = (Date.now() - new Date(data.created).getTime()) / 1000;
   return timeElapsed > data.ttl && data.ttl > 0;
+};
+
+const isErrnoException = (error: unknown): error is NodeJS.ErrnoException => {
+  return error instanceof Error && 'code' in error;
 };

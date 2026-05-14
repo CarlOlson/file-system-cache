@@ -85,7 +85,7 @@ export class FileSystemCache {
    * @return File contents, or
    *         undefined if the file does not exist.
    */
-  public get(key: string, defaultValue?: any) {
+  public get<T>(key: string, defaultValue?: T): Promise<T | undefined> {
     return Util.getValueP(this.path(key), defaultValue);
   }
 
@@ -95,9 +95,9 @@ export class FileSystemCache {
    * @param defaultValue: Optional. A default value to return if the value does not exist in cache.
    * @return the cached value, or undefined.
    */
-  public getSync(key: string, defaultValue?: any) {
+  public getSync<T>(key: string, defaultValue?: T): T | undefined {
     const path = this.path(key);
-    return fs.existsSync(path) ? Util.toGetValue(JSON.parse(fs.readFileSync(path, 'utf8'))) : defaultValue;
+    return fs.existsSync(path) ? (Util.toGetValue(fs.readFileSync(path, 'utf8')) as T) : defaultValue;
   }
 
   /**
@@ -105,7 +105,7 @@ export class FileSystemCache {
    * @param {string} key: The key of the cache item.
    * @param value: The value to write (Primitive or Object).
    */
-  public async set(key: string, value: any, ttl?: number) {
+  public async set<T>(key: string, value: T, ttl?: number) {
     const path = this.path(key);
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     await this.ensureBasePath();
@@ -119,7 +119,7 @@ export class FileSystemCache {
    * @param value: The value to write (Primitive or Object).
    * @return the cache.
    */
-  public setSync(key: string, value: any, ttl?: number) {
+  public setSync<T>(key: string, value: T, ttl?: number) {
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     fs.mkdirSync(this.basePath, { recursive: true });
     fs.writeFileSync(this.path(key), Util.toJson(value, ttl));
@@ -146,7 +146,7 @@ export class FileSystemCache {
   /**
    * Loads all files within the cache's namespace.
    */
-  public async load(): Promise<{ files: { path: string; value: any }[] }> {
+  public async load(): Promise<{ files: { path: string; value: unknown }[] }> {
     const paths = await Util.filePathsP(this.basePath, this.ns);
     if (paths.length === 0) return { files: [] };
     const files = await Promise.all(paths.map(async (path) => ({ path, value: await Util.getValueP(path) })));
