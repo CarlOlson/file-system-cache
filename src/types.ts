@@ -1,7 +1,6 @@
 import type { DisposableTempDir } from 'node:fs';
-import type { HashAlgorithm } from './types.hashes';
 
-export type { HashAlgorithm };
+export type HashAlgorithm = string;
 
 export type Namespace = string | string[];
 

@@ -1,5 +1,4 @@
 import * as assert from 'node:assert/strict';
-import * as crypto from 'node:crypto';
 import { describe, it } from 'node:test';
 import * as Util from '../common/util.ts';
 import { FileSystemCache } from '../index.ts';
@@ -30,13 +29,6 @@ describe('common/util', () => {
       };
       test('sha1', '30ae97492ce1da88d0e7117ace0a60a6f9e1e0bc');
       test('sha256', '25b6746d5172ed6352966a013d93ac846e1110d5a25e8f183b5931f4688842a1');
-    });
-  });
-
-  describe('util.hash (generator)', () => {
-    it('hashes constant matches node', () => {
-      const hashes = crypto.getHashes();
-      for (const name of FileSystemCache.hashAlgorithms) assert.ok(hashes.includes(name));
     });
   });
 });

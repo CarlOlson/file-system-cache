@@ -18,10 +18,6 @@ export const isFileSync = (path: string) => {
   return fs.existsSync(path) ? fs.lstatSync(path).isFile() : false;
 };
 
-export const readFileSync = (path: string) => {
-  return fs.existsSync(path) ? fs.readFileSync(path).toString() : undefined;
-};
-
 export const filePathsP = async (basePath: string, ns?: string): Promise<string[]> => {
   try {
     return (await fsp.readdir(basePath))

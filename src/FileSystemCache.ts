@@ -1,7 +1,7 @@
+import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { hashAlgorithms } from './common/const.hashes.ts';
 import * as Util from './common/util.ts';
 import type * as t from './types.ts';
 
@@ -12,7 +12,7 @@ export class FileSystemCache {
   /**
    * The list of all available hash algorithms.
    */
-  static hashAlgorithms: t.HashAlgorithm[] = hashAlgorithms;
+  static hashAlgorithms: t.HashAlgorithm[] = crypto.getHashes();
 
   /**
    * Instance.
