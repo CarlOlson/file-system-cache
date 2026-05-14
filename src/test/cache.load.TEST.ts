@@ -1,11 +1,12 @@
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { FileSystemCache } from '..';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import { FileSystemCache } from '../index.ts';
 
 describe('load', () => {
   it('loads no files', async () => {
     using cache = FileSystemCache.disposable();
     const result = await cache.load();
-    expect(result.files).to.eql([]);
+    assert.deepEqual(result.files, []);
   });
 
   it('loads several files (no namespace)', async () => {
@@ -16,8 +17,8 @@ describe('load', () => {
     cache2.set('yo', 'ns-value');
 
     const files = (await cache1.load()).files;
-    expect(files.length).to.equal(2);
-    expect(files[0].value).to.equal('two');
-    expect(files[1].value).to.equal(1);
+    assert.equal(files.length, 2);
+    assert.equal(files[0].value, 'two');
+    assert.equal(files[1].value, 1);
   });
 });

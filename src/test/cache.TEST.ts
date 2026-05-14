@@ -1,84 +1,81 @@
+import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
-import * as path from 'node:path';
 import * as os from 'node:os';
-import { describe, expect, it } from 'vitest';
-import { FileSystemCache } from '..';
-import * as Util from '../common/util';
-import type * as t from '../types';
+import * as path from 'node:path';
+import { describe, it } from 'node:test';
+import * as Util from '../common/util.ts';
+import { FileSystemCache } from '../index.ts';
+import type * as t from '../types.ts';
 
 describe('FileSystemCache', () => {
   describe('constructor', () => {
     it('defaults', () => {
       using cache = FileSystemCache.disposable();
-      expect(cache.hash).to.eql('sha1');
-      expect(cache.ttl).to.eql(0);
-      expect(cache.ns).to.eql(undefined);
-      expect(cache.extension).to.eql(undefined);
+      assert.equal(cache.hash, 'sha1');
+      assert.equal(cache.ttl, 0);
+      assert.equal(cache.ns, undefined);
+      assert.equal(cache.extension, undefined);
     });
 
-    it('throw: hash not supported', async () => {
+    it('throw: hash not supported', () => {
       const hash = '404-no-exist' as any;
-      const fn = () => new FileSystemCache({ hash });
-      expect(fn).to.throw(/Hash does not exist/);
+      assert.throws(() => new FileSystemCache({ hash }), /Hash does not exist/);
     });
   });
 
   describe('basePath', () => {
     it("has a default path of '/.cache'", () => {
       const cache = new FileSystemCache();
-      expect(cache.basePath).to.equal(path.resolve('./.cache'));
+      assert.equal(cache.basePath, path.resolve('./.cache'));
     });
 
     it("resolves the path if the path starts with ('.')", () => {
       const basePath = './test/foo';
       const cache = new FileSystemCache({ basePath });
-      expect(cache.basePath).to.equal(path.resolve(basePath));
+      assert.equal(cache.basePath, path.resolve(basePath));
     });
 
     it('uses the given absolute path', () => {
-      const path = '/foo';
-      const cache = new FileSystemCache({ basePath: path });
-      expect(cache.basePath).to.equal(path);
+      const basePath = '/foo';
+      const cache = new FileSystemCache({ basePath });
+      assert.equal(cache.basePath, basePath);
     });
 
     it('throws if the basePath is a file', () => {
-      let fn = () => {
-        new FileSystemCache({ basePath: './README.md' });
-      };
-      expect(fn).to.throw();
+      assert.throws(() => new FileSystemCache({ basePath: './README.md' }));
     });
   });
 
   describe('ns (namespace)', () => {
     it('has no namespace by default', () => {
-      expect(new FileSystemCache().ns).to.equal(undefined);
-      expect(new FileSystemCache([] as any).ns).to.equal(undefined);
-      expect(new FileSystemCache([null, undefined] as any).ns).to.equal(undefined);
+      assert.equal(new FileSystemCache().ns, undefined);
+      assert.equal(new FileSystemCache([] as any).ns, undefined);
+      assert.equal(new FileSystemCache([null, undefined] as any).ns, undefined);
     });
 
     it('creates a namespace hash with a single value', () => {
       const cache1 = new FileSystemCache({ ns: 'foo' });
       const cache2 = new FileSystemCache({ ns: 'foo', hash: 'sha256' });
       const cache3 = new FileSystemCache({ ns: 'foo', hash: 'sha512' });
-      expect(cache1.ns).to.equal(Util.hash('sha1', 'foo'));
-      expect(cache2.ns).to.equal(Util.hash('sha256', 'foo'));
-      expect(cache3.ns).to.equal(Util.hash('sha512', 'foo'));
+      assert.equal(cache1.ns, Util.hash('sha1', 'foo'));
+      assert.equal(cache2.ns, Util.hash('sha256', 'foo'));
+      assert.equal(cache3.ns, Util.hash('sha512', 'foo'));
     });
 
     it('creates a namespace hash with several values', () => {
       const cache1 = new FileSystemCache({ ns: ['foo', 123] });
       const cache2 = new FileSystemCache({ ns: ['foo', 123], hash: 'sha256' });
       const cache3 = new FileSystemCache({ ns: ['foo', 123], hash: 'sha512' });
-      expect(cache1.ns).to.equal(Util.hash('sha1', 'foo', 123));
-      expect(cache2.ns).to.equal(Util.hash('sha256', 'foo', 123));
-      expect(cache3.ns).to.equal(Util.hash('sha512', 'foo', 123));
+      assert.equal(cache1.ns, Util.hash('sha1', 'foo', 123));
+      assert.equal(cache2.ns, Util.hash('sha256', 'foo', 123));
+      assert.equal(cache3.ns, Util.hash('sha512', 'foo', 123));
     });
   });
 
   describe('path', () => {
     it('throws if no key is provided', () => {
       const cache = new FileSystemCache();
-      expect(() => (cache as any).path()).to.throw();
+      assert.throws(() => (cache as any).path());
     });
 
     it('returns a path with no namespace', () => {
@@ -87,7 +84,7 @@ describe('FileSystemCache', () => {
         const file = Util.hash(hash, key);
 
         using cache = FileSystemCache.disposable({ hash });
-        expect(cache.path(key)).to.equal(path.join(cache.basePath, file));
+        assert.equal(cache.path(key), path.join(cache.basePath, file));
       };
 
       test('sha1');
@@ -102,7 +99,7 @@ describe('FileSystemCache', () => {
         const file = `${Util.hash(hash, ns)}-${Util.hash(hash, key)}`;
 
         using cache = FileSystemCache.disposable({ ns, hash });
-        expect(cache.path(key)).to.equal(path.join(cache.basePath, file));
+        assert.equal(cache.path(key), path.join(cache.basePath, file));
       };
 
       test('sha1');
@@ -117,12 +114,12 @@ describe('FileSystemCache', () => {
 
         {
           using cache = FileSystemCache.disposable({ hash, extension: 'styl' });
-          expect(cache.path(key)).to.equal(path.join(cache.basePath, file));
+          assert.equal(cache.path(key), path.join(cache.basePath, file));
         }
 
         {
           using cache = FileSystemCache.disposable({ hash, extension: '.styl' });
-          expect(cache.path(key)).to.equal(path.join(cache.basePath, file));
+          assert.equal(cache.path(key), path.join(cache.basePath, file));
         }
       };
 
@@ -136,12 +133,12 @@ describe('FileSystemCache', () => {
     it('creates the base path', async () => {
       using tmpdir = fs.mkdtempDisposableSync(path.join(os.tmpdir(), 'node-file-system-cache-'));
       const cache = new FileSystemCache({ basePath: path.join(tmpdir.path, '.cache') });
-      expect(fs.existsSync(cache.basePath)).to.equal(false);
-      expect(cache.basePathExists).not.to.equal(true);
+      assert.equal(fs.existsSync(cache.basePath), false);
+      assert.notEqual(cache.basePathExists, true);
 
       await cache.ensureBasePath();
-      expect(cache.basePathExists).to.equal(true);
-      expect(fs.existsSync(cache.basePath)).to.equal(true);
+      assert.equal(cache.basePathExists, true);
+      assert.equal(fs.existsSync(cache.basePath), true);
     });
   });
 });

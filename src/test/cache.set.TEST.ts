@@ -1,17 +1,18 @@
+import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
-import { describe, expect, it } from 'vitest';
-import { FileSystemCache } from '..';
+import { describe, it } from 'node:test';
+import { FileSystemCache } from '../index.ts';
 
 describe('set', () => {
   it('saves a string to the file-system', async () => {
     using cache = FileSystemCache.disposable();
     const path = cache.path('foo');
     const value = 'my value';
-    expect(fs.existsSync(path)).to.equal(false);
+    assert.equal(fs.existsSync(path), false);
 
     const res = await cache.set('foo', value);
-    expect(res.path).to.equal(path);
-    expect(fs.readFileSync(path).toString()).to.include('my value');
+    assert.equal(res.path, path);
+    assert.ok(fs.readFileSync(path).toString().includes('my value'));
   });
 
   it('saves an object to the file-system', async () => {
@@ -21,14 +22,14 @@ describe('set', () => {
     const res = await cache.set('foo', value);
 
     const fileText = fs.readFileSync(res.path).toString();
-    expect(fileText).to.include('hello');
-    expect(fileText).to.include('123');
+    assert.ok(fileText.includes('hello'));
+    assert.ok(fileText.includes('123'));
   });
 
   it('setSync: saves a value synchonously', () => {
     using cache = FileSystemCache.disposable();
     const result = cache.setSync('foo', { text: 'sync' });
-    expect(result).to.equal(cache);
-    expect(cache.getSync('foo')).to.eql({ text: 'sync' });
+    assert.equal(result, cache);
+    assert.deepEqual(cache.getSync('foo'), { text: 'sync' });
   });
 });

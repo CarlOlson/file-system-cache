@@ -1,17 +1,18 @@
-import { describe, expect, it } from 'vitest';
-import { FileSystemCache } from '..';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import { FileSystemCache } from '../index.ts';
 
 describe('get', () => {
   it('file not exist on the file-system', async () => {
     using cache = FileSystemCache.disposable();
     const res = await cache.get('foo');
-    expect(res).to.eql(undefined);
+    assert.equal(res, undefined);
   });
 
   it('gets a default value', async () => {
     using cache = FileSystemCache.disposable();
     return cache.get('foo', { myDefault: 123 }).then((result) => {
-      expect(result).to.eql({ myDefault: 123 });
+      assert.deepEqual(result, { myDefault: 123 });
     });
   });
 
@@ -22,9 +23,9 @@ describe('get', () => {
     await cache1.set('number', 123);
     await cache1.set('object', { foo: 456 });
 
-    expect(await cache2.get('text')).to.eql('my value');
-    expect(await cache2.get('number')).to.eql(123);
-    expect(await cache2.get('object')).to.eql({ foo: 456 });
+    assert.equal(await cache2.get('text'), 'my value');
+    assert.equal(await cache2.get('number'), 123);
+    assert.deepEqual(await cache2.get('object'), { foo: 456 });
   });
 
   it('reads a stored date', async () => {
@@ -32,7 +33,7 @@ describe('get', () => {
     const cache2 = new FileSystemCache({ basePath: cache1.basePath });
     const now = new Date();
     await cache1.set('date', now);
-    expect(await cache2.get('date')).to.eql(now);
+    assert.deepEqual(await cache2.get('date'), now);
   });
 
   describe('getSync', () => {
@@ -41,13 +42,13 @@ describe('get', () => {
       const now = new Date();
 
       await cache.set('date', now);
-      expect(cache.getSync('date')).to.eql(now);
+      assert.deepEqual(cache.getSync('date'), now);
     });
 
     it('returns a default value synchonously', () => {
       using cache = FileSystemCache.disposable();
       const result = cache.getSync('my-sync-value', { myDefault: 123 });
-      expect(result).to.eql({ myDefault: 123 });
+      assert.deepEqual(result, { myDefault: 123 });
     });
   });
 });

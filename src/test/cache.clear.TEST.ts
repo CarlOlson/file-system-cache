@@ -1,7 +1,7 @@
+import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { FileSystemCache } from '..';
-import { BasePath, deleteTmpDir } from './common';
+import { describe, it } from 'node:test';
+import { FileSystemCache } from '../index.ts';
 
 describe('clear', () => {
   it('clears all items (no namespace)', async () => {
@@ -10,10 +10,10 @@ describe('clear', () => {
 
     await cache.set('foo', 'my-text');
     await cache.set('bar', { foo: 123 });
-    expect(readdir().length).to.equal(2);
+    assert.equal(readdir().length, 2);
 
     await cache.clear();
-    expect(fs.readdirSync(cache.basePath).length).to.equal(0);
+    assert.equal(fs.readdirSync(cache.basePath).length, 0);
   });
 
   describe('with namespace', () => {
@@ -23,10 +23,10 @@ describe('clear', () => {
 
       await cache1.set('foo', 'my-text');
       await cache2.set('foo', 'my-text'); // Different value because of NS.
-      expect(fs.readdirSync(cache1.basePath).length).to.equal(2);
+      assert.equal(fs.readdirSync(cache1.basePath).length, 2);
 
       await cache1.clear();
-      expect(fs.readdirSync(cache1.basePath).length).to.equal(1);
+      assert.equal(fs.readdirSync(cache1.basePath).length, 1);
     });
 
     it('clears all items with namespace - protects namespace items', async () => {
@@ -35,10 +35,10 @@ describe('clear', () => {
 
       await cache1.set('foo', 'my-text');
       await cache2.set('foo', 'my-text'); // Different value because of NS.
-      expect(fs.readdirSync(cache1.basePath).length).to.equal(2);
+      assert.equal(fs.readdirSync(cache1.basePath).length, 2);
 
       await cache2.clear();
-      expect(fs.readdirSync(cache1.basePath).length).to.equal(1);
+      assert.equal(fs.readdirSync(cache1.basePath).length, 1);
     });
   });
 });

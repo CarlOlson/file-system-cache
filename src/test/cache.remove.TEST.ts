@@ -1,15 +1,16 @@
-import { describe, expect, it } from 'vitest';
-import { FileSystemCache } from '..';
-import * as Util from '../common/util';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import * as Util from '../common/util.ts';
+import { FileSystemCache } from '../index.ts';
 
 describe('remove', () => {
   it('removes the file from the file-system', async () => {
     using cache = FileSystemCache.disposable();
     await cache.set('foo', 'my-text');
-    expect(Util.isFileSync(cache.path('foo'))).to.equal(true);
+    assert.equal(Util.isFileSync(cache.path('foo')), true);
 
     await cache.remove('foo');
-    expect(Util.isFileSync(cache.path('foo'))).to.equal(false);
+    assert.equal(Util.isFileSync(cache.path('foo')), false);
   });
 
   it('does nothing if the key does not exist', async () => {
@@ -17,6 +18,6 @@ describe('remove', () => {
     await cache.set('foo', 'my-text');
 
     await cache.remove('foobar');
-    expect(Util.isFileSync(cache.path('foo'))).to.equal(true);
+    assert.equal(Util.isFileSync(cache.path('foo')), true);
   });
 });

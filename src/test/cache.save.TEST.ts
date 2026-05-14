@@ -1,20 +1,21 @@
+import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
-import { describe, expect, it } from 'vitest';
-import { FileSystemCache } from '..';
+import { describe, it } from 'node:test';
+import { FileSystemCache } from '../index.ts';
 
 describe('save', () => {
   it('throws if items not valid', async () => {
     using cache = FileSystemCache.disposable();
 
-    await expect(cache.save([{}] as any)).rejects.toThrow();
-    await expect(cache.save([{ key: 1 }] as any)).rejects.toThrow();
-    await expect(cache.save([{ value: 'foo' }] as any)).rejects.toThrow();
+    await assert.rejects(cache.save([{}] as any));
+    await assert.rejects(cache.save([{ key: 1 }] as any));
+    await assert.rejects(cache.save([{ value: 'foo' }] as any));
   });
 
   it('resolves immediately if an empty array was passed', async () => {
     using cache = FileSystemCache.disposable();
     const res = await cache.save([]);
-    expect(res.paths.length).to.eql(0);
+    assert.equal(res.paths.length, 0);
   });
 
   it('saves several files', async () => {
@@ -30,10 +31,10 @@ describe('save', () => {
     const res = await cache.save(payload);
     const paths = res.paths;
 
-    expect(paths.length).to.equal(2);
-    expect(fs.existsSync(paths[0])).to.equal(true);
-    expect(fs.existsSync(paths[1])).to.equal(true);
-    expect(cache.getSync('one')).to.equal('value-1');
-    expect(cache.getSync('two').foo).to.equal('value-2');
+    assert.equal(paths.length, 2);
+    assert.equal(fs.existsSync(paths[0]), true);
+    assert.equal(fs.existsSync(paths[1]), true);
+    assert.equal(cache.getSync('one'), 'value-1');
+    assert.equal(cache.getSync('two').foo, 'value-2');
   });
 });
