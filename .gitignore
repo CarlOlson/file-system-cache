@@ -3,3 +3,12 @@ lib
 node_modules
 npm-debug.log
 /.tmp
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
