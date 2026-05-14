@@ -57,7 +57,7 @@ or use modern `async/await` syntactic sugar of course:
 const value = await cache.get("foo");
 ```
 
-Use `getSync` for a synchronous version.  
+Use `getSync` for a synchronous version.
 Pass a `defaultValue` parameter to use if the key does not exist within the cache.
 
 
@@ -92,14 +92,6 @@ cache.clear()
   .then(() => /* All items deleted */)
 ```
 
-
-### save()
-Saves (sets) several items to the cache in one operation.
-```js
-cache.save([{ key:"one", value:"hello" }, { key:"two", value:222 }])
-  .then(result => /* All items saved. */)
-```
-
 ### load()
 Loads all files within the cache's namespace.
 ```js
@@ -112,4 +104,3 @@ cache.load()
 ## Test
     # Run tests.
     npm test
-

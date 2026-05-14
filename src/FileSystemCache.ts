@@ -144,34 +144,6 @@ export class FileSystemCache {
   }
 
   /**
-   * Saves several items to the cache in one operation.
-   * @param {array} items: An array of objects of the form { key, value }.
-   */
-  public async save(input: ({ key: string; value: any } | null | undefined)[]): Promise<{ paths: string[] }> {
-    type Item = { key: string; value: any };
-    let items = (Array.isArray(input) ? input : [input]) as Item[];
-
-    const isValid = (item: any) => {
-      if (item == null || typeof item !== 'object') return false;
-      return item.key && item.value;
-    };
-
-    items = items.filter((item) => Boolean(item));
-    items
-      .filter((item) => !isValid(item))
-      .forEach(() => {
-        const err = `Save items not valid, must be an array of {key, value} objects.`;
-        throw new Error(err);
-      });
-
-    if (items.length === 0) return { paths: [] };
-
-    const paths = await Promise.all(items.map(async (item) => (await this.set(item.key, item.value)).path));
-
-    return { paths };
-  }
-
-  /**
    * Loads all files within the cache's namespace.
    */
   public async load(): Promise<{ files: { path: string; value: any }[] }> {
