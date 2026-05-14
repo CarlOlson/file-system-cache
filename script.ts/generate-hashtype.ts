@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 
-import { crypto, fsPath } from '../src/common/index.ts';
+import * as crypto from 'node:crypto';
+import * as fsPath from 'node:path';
 
 const HashUnionType = {
   /**
@@ -32,7 +33,7 @@ const HashUnionType = {
 
     const { type, constants } = HashUnionType.generate();
     const typeDef = `${header}\n${type}\n`;
-    const importT = `import type { t } from '../common.t';`;
+    const importT = `import type * as t from '../types.ts';`;
     const constDef = `${header}\n${importT}\n\n${constants}\n`;
 
     fs.writeFileSync(fsPath.resolve('./src/types.hashes.ts'), typeDef);

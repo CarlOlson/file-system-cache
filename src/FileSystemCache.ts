@@ -1,5 +1,8 @@
 import * as fs from 'node:fs';
-import { R, Util, hashAlgorithms, type t } from './common/index.ts';
+import * as R from 'ramda';
+import { hashAlgorithms } from './common/const.hashes.ts';
+import * as Util from './common/util.ts';
+import type * as t from './types.ts';
 
 /**
  * A cache that read/writes to a specific part of the file-system.

@@ -1,11 +1,14 @@
 import { expect } from 'chai';
+import * as crypto from 'node:crypto';
+import * as fs from 'node:fs';
+import * as fsPath from 'node:path';
 import { FileSystemCache } from '..';
-import { Util, crypto, fsPath, type t } from '../common';
+import * as Util from '../common/util.ts';
+import type * as t from '../types.ts';
 
 export { afterAll, afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
-export { FileSystemCache, Util, crypto, expect, fsPath, type t };
-
-import * as fs from 'node:fs';
+export { FileSystemCache, Util, crypto, expect, fsPath };
+export type { t };
 
 export const BasePath = {
   root: './.tmp',

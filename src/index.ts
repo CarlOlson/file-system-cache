@@ -1,5 +1,5 @@
-import { type t } from './common/index.ts';
 import { FileSystemCache } from './FileSystemCache.ts';
+import type * as t from './types.ts';
 
 /**
  * Default entry function.

@@ -4,7 +4,7 @@
  *    - generator:  script.ts/generate-hashtype.ts
  *    - command:    yarn run gen:hashtype
  */
-import type { t } from '../common.t';
+import type * as t from '../types.ts';
 
 export const hashAlgorithms: t.HashAlgorithm[] = [
   'RSA-MD5',
