@@ -5,7 +5,7 @@ import { Util, crypto, fsPath, type t } from '../common';
 export { afterAll, afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
 export { FileSystemCache, Util, crypto, expect, fsPath, type t };
 
-import * as fse from 'fs-extra/esm';
+import * as fs from 'node:fs';
 
 export const BasePath = {
   root: './.tmp',
@@ -18,7 +18,7 @@ export const BasePath = {
 
 export const deleteTmpDir = async (basePath?: string) => {
   const path = fsPath.resolve(basePath || BasePath.root);
-  fse.removeSync(path);
+  fs.rmSync(path, { recursive: true, force: true });
 };
 
 export const Sleep = {

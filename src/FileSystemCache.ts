@@ -1,5 +1,4 @@
 import * as fs from 'node:fs';
-import * as fse from 'fs-extra/esm';
 import { R, Util, hashAlgorithms, type t } from './common/index';
 
 /**
@@ -64,18 +63,10 @@ export class FileSystemCache {
   }
 
   /**
-   * Determines whether the file exists.
-   * @param {string} key: The key of the cache item.
-   */
-  public fileExists(key: string) {
-    return fse.pathExists(this.path(key));
-  }
-
-  /**
    * Ensure that the base path exists.
    */
   public async ensureBasePath() {
-    if (!this.basePathExists) await fse.ensureDir(this.basePath);
+    if (!this.basePathExists) await fs.promises.mkdir(this.basePath, { recursive: true });
     this.basePathExists = true;
   }
 
@@ -98,7 +89,7 @@ export class FileSystemCache {
    */
   public getSync(key: string, defaultValue?: any) {
     const path = this.path(key);
-    return fs.existsSync(path) ? Util.toGetValue(fse.readJsonSync(path)) : defaultValue;
+    return fs.existsSync(path) ? Util.toGetValue(JSON.parse(fs.readFileSync(path, 'utf8'))) : defaultValue;
   }
 
   /**
@@ -110,7 +101,7 @@ export class FileSystemCache {
     const path = this.path(key);
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     await this.ensureBasePath();
-    await fse.outputFile(path, Util.toJson(value, ttl));
+    await fs.promises.writeFile(path, Util.toJson(value, ttl));
     return { path };
   }
 
@@ -122,7 +113,8 @@ export class FileSystemCache {
    */
   public setSync(key: string, value: any, ttl?: number) {
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
-    fse.outputFileSync(this.path(key), Util.toJson(value, ttl));
+    fs.mkdirSync(this.basePath, { recursive: true });
+    fs.writeFileSync(this.path(key), Util.toJson(value, ttl));
     return this;
   }
 
@@ -131,7 +123,7 @@ export class FileSystemCache {
    * @param {string} key: The key of the cache item.
    */
   public remove(key: string) {
-    return fse.remove(this.path(key));
+    return fs.promises.rm(this.path(key), { force: true });
   }
 
   /**
@@ -139,7 +131,7 @@ export class FileSystemCache {
    */
   public async clear() {
     const paths = await Util.filePathsP(this.basePath, this.ns);
-    await Promise.all(paths.map((path) => fse.remove(path)));
+    await Promise.all(paths.map((path) => fs.promises.rm(path, { force: true })));
     console.groupEnd();
   }
 

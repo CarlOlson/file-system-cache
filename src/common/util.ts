@@ -1,4 +1,3 @@
-import { pathExists, readJson, removeSync } from 'fs-extra/esm';
 import * as fs from 'node:fs';
 import * as fsp from 'node:fs/promises';
 import { type t } from '../common.t';
@@ -31,12 +30,16 @@ export const readFileSync = (path: string) => {
 };
 
 export const filePathsP = async (basePath: string, ns: string): Promise<string[]> => {
-  if (!(await pathExists(basePath))) return [];
-  return (await fsp.readdir(basePath))
-    .filter(Boolean)
-    .filter((name) => (ns ? name.startsWith(ns) : true))
-    .filter((name) => (!ns ? !name.includes('-') : true))
-    .map((name) => `${basePath}/${name}`);
+  try {
+    return (await fsp.readdir(basePath))
+      .filter(Boolean)
+      .filter((name) => (ns ? name.startsWith(ns) : true))
+      .filter((name) => (!ns ? !name.includes('-') : true))
+      .map((name) => `${basePath}/${name}`);
+  } catch (error: any) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
 };
 
 /**
@@ -60,14 +63,12 @@ export const hashExists = (algorithm: t.HashAlgorithm) => {
  * Retrieve a value from the given path.
  */
 export async function getValueP(path: string, defaultValue?: any) {
-  const exists = await pathExists(path);
-  if (!exists) return defaultValue;
   try {
-    return toGetValue(await readJson(path));
+    return toGetValue(JSON.parse(await fsp.readFile(path, 'utf8')));
   } catch (error: any) {
     if (error.code === 'ENOENT') return defaultValue;
     if (error.message === 'Cache item has expired.') {
-      removeSync(path);
+      fs.rmSync(path, { force: true });
       return defaultValue;
     }
     throw new Error(`Failed to read cache value at: ${path}. ${error.message}`);
