@@ -1,16 +1,7 @@
 import * as fs from 'node:fs';
-
-import {
-  BasePath,
-  FileSystemCache,
-  afterAll,
-  beforeEach,
-  deleteTmpDir,
-  describe,
-  expect,
-  expectError,
-  it,
-} from './common';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { FileSystemCache } from '..';
+import { BasePath, deleteTmpDir } from './common';
 
 describe('save', () => {
   const basePath = BasePath.random();
@@ -20,9 +11,9 @@ describe('save', () => {
   it('throws if items not valid', async () => {
     const cache = new FileSystemCache({ basePath });
 
-    await expectError(() => cache.save([{}] as any));
-    await expectError(() => cache.save([{ key: 1 }] as any));
-    await expectError(() => cache.save([{ value: 'foo' }] as any));
+    await expect(cache.save([{}] as any)).rejects.toThrow();
+    await expect(cache.save([{ key: 1 }] as any)).rejects.toThrow();
+    await expect(cache.save([{ value: 'foo' }] as any)).rejects.toThrow();
   });
 
   it('resolves immediately if an empty array was passed', async () => {

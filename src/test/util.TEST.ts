@@ -1,4 +1,8 @@
-import { FileSystemCache, Util, crypto, describe, expect, it, type t } from './common';
+import * as crypto from 'node:crypto';
+import { describe, expect, it } from 'vitest';
+import { FileSystemCache } from '..';
+import * as Util from '../common/util';
+import type * as t from '../types';
 
 describe('common/util', () => {
   it('compact', () => {

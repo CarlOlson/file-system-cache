@@ -1,5 +1,5 @@
-import CacheFs from '..';
-import { FileSystemCache, describe, expect, it } from './common';
+import { describe, expect, it } from 'vitest';
+import CacheFs, { FileSystemCache } from '..';
 
 describe('Module entry API', () => {
   it('creates an instance of [FileSystemCache]', () => {

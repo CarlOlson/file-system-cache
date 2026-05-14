@@ -1,4 +1,6 @@
-import { BasePath, FileSystemCache, Sleep, afterAll, beforeEach, deleteTmpDir, describe, expect, it } from './common';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { FileSystemCache } from '..';
+import { BasePath, Sleep, deleteTmpDir } from './common';
 
 describe('expires', () => {
   const basePath = BasePath.random();

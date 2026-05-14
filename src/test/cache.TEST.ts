@@ -1,18 +1,10 @@
-import {
-  BasePath,
-  FileSystemCache,
-  Util,
-  afterAll,
-  beforeEach,
-  deleteTmpDir,
-  describe,
-  expect,
-  fsPath,
-  it,
-  type t,
-} from './common';
-
 import * as fs from 'node:fs';
+import * as fsPath from 'node:path';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { FileSystemCache } from '..';
+import * as Util from '../common/util';
+import type * as t from '../types';
+import { BasePath, deleteTmpDir } from './common';
 
 describe('FileSystemCache', () => {
   const basePath = BasePath.random();

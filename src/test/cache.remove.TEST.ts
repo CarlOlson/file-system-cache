@@ -1,4 +1,7 @@
-import { BasePath, FileSystemCache, Util, afterAll, beforeEach, deleteTmpDir, describe, expect, it } from './common';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { FileSystemCache } from '..';
+import * as Util from '../common/util';
+import { BasePath, deleteTmpDir } from './common';
 
 describe('remove', () => {
   const basePath = BasePath.random();
