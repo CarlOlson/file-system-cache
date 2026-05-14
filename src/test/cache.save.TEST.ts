@@ -1,15 +1,10 @@
 import * as fs from 'node:fs';
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FileSystemCache } from '..';
-import { BasePath, deleteTmpDir } from './common';
 
 describe('save', () => {
-  const basePath = BasePath.random();
-  beforeEach(() => deleteTmpDir(basePath));
-  afterAll(() => deleteTmpDir(basePath));
-
   it('throws if items not valid', async () => {
-    const cache = new FileSystemCache({ basePath });
+    using cache = FileSystemCache.disposable();
 
     await expect(cache.save([{}] as any)).rejects.toThrow();
     await expect(cache.save([{ key: 1 }] as any)).rejects.toThrow();
@@ -17,13 +12,13 @@ describe('save', () => {
   });
 
   it('resolves immediately if an empty array was passed', async () => {
-    const cache = new FileSystemCache({ basePath });
+    using cache = FileSystemCache.disposable();
     const res = await cache.save([]);
     expect(res.paths.length).to.eql(0);
   });
 
   it('saves several files', async () => {
-    const cache = new FileSystemCache({ basePath });
+    using cache = FileSystemCache.disposable();
 
     const payload = [
       { key: 'one', value: 'value-1' },

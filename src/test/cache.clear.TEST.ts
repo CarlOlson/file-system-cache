@@ -4,12 +4,8 @@ import { FileSystemCache } from '..';
 import { BasePath, deleteTmpDir } from './common';
 
 describe('clear', () => {
-  const basePath = BasePath.random();
-  beforeEach(() => deleteTmpDir(basePath));
-  afterAll(() => deleteTmpDir(basePath));
-
   it('clears all items (no namespace)', async () => {
-    const cache = new FileSystemCache({ basePath });
+    using cache = FileSystemCache.disposable();
     const readdir = () => fs.readdirSync(cache.basePath);
 
     await cache.set('foo', 'my-text');
@@ -22,8 +18,8 @@ describe('clear', () => {
 
   describe('with namespace', () => {
     it('clears all items without namespace - protects non-namespace items', async () => {
-      const cache1 = new FileSystemCache({ basePath });
-      const cache2 = new FileSystemCache({ basePath, ns: 'My Namespace' });
+      using cache1 = FileSystemCache.disposable();
+      const cache2 = new FileSystemCache({ basePath: cache1.basePath, ns: 'My Namespace' });
 
       await cache1.set('foo', 'my-text');
       await cache2.set('foo', 'my-text'); // Different value because of NS.
@@ -34,8 +30,8 @@ describe('clear', () => {
     });
 
     it('clears all items with namespace - protects namespace items', async () => {
-      const cache1 = new FileSystemCache({ basePath });
-      const cache2 = new FileSystemCache({ basePath, ns: 'My Namespace' });
+      using cache1 = FileSystemCache.disposable();
+      const cache2 = new FileSystemCache({ basePath: cache1.basePath, ns: 'My Namespace' });
 
       await cache1.set('foo', 'my-text');
       await cache2.set('foo', 'my-text'); // Different value because of NS.

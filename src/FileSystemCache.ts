@@ -1,4 +1,6 @@
 import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import * as R from 'ramda';
 import { hashAlgorithms } from './common/const.hashes.ts';
 import * as Util from './common/util.ts';
@@ -16,6 +18,7 @@ export class FileSystemCache {
   /**
    * Instance.
    */
+  readonly tmpDir?: fs.DisposableTempDir;
   readonly basePath: string;
   readonly ns?: any;
   readonly extension?: string;
@@ -38,7 +41,8 @@ export class FileSystemCache {
    *                          Default: "sha1"
    */
   constructor(options: t.FileSystemCacheOptions = {}) {
-    this.basePath = formatPath(options.basePath);
+    this.tmpDir = options.tmpDir;
+    this.basePath = formatPath(options.basePath ?? options.tmpDir?.path);
     this.hash = options.hash ?? 'sha1';
     this.ns = Util.hash(this.hash, options.ns);
     this.ttl = options.ttl ?? 0;
@@ -69,8 +73,10 @@ export class FileSystemCache {
    * Ensure that the base path exists.
    */
   public async ensureBasePath() {
-    if (!this.basePathExists) await fs.promises.mkdir(this.basePath, { recursive: true });
-    this.basePathExists = true;
+    if (!this.tmpDir && !this.basePathExists) {
+      await fs.promises.mkdir(this.basePath, { recursive: true });
+      this.basePathExists = true;
+    }
   }
 
   /**
@@ -174,6 +180,22 @@ export class FileSystemCache {
     if (paths.length === 0) return { files: [] };
     const files = await Promise.all(paths.map(async (path) => ({ path, value: await Util.getValueP(path) })));
     return { files };
+  }
+
+  /**
+   * Creates a temporary folder that is automatically deleted when using a `using` declaration.
+   */
+  static disposable(options: Omit<t.FileSystemCacheOptions, 'basePath'> = {}) {
+    const tmpDir = fs.mkdtempDisposableSync(path.join(os.tmpdir(), 'node-file-system-cache-'));
+    return new FileSystemCache({ ...options, tmpDir });
+  }
+
+  public [Symbol.dispose]() {
+    if (this.tmpDir) {
+      this.tmpDir[Symbol.dispose]();
+    } else {
+      throw new Error(`Do not use with 'using' declaration except via FileSystemCache.disposable()`);
+    }
   }
 }
 

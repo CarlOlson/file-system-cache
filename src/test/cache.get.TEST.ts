@@ -1,28 +1,23 @@
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FileSystemCache } from '..';
-import { BasePath, deleteTmpDir } from './common';
 
 describe('get', () => {
-  const basePath = BasePath.random();
-  beforeEach(() => deleteTmpDir(basePath));
-  afterAll(() => deleteTmpDir(basePath));
-
   it('file not exist on the file-system', async () => {
-    const cache = new FileSystemCache({ basePath });
+    using cache = FileSystemCache.disposable();
     const res = await cache.get('foo');
     expect(res).to.eql(undefined);
   });
 
   it('gets a default value', async () => {
-    const cache = new FileSystemCache({ basePath });
+    using cache = FileSystemCache.disposable();
     return cache.get('foo', { myDefault: 123 }).then((result) => {
       expect(result).to.eql({ myDefault: 123 });
     });
   });
 
   it('reads a stored values (various types)', async () => {
-    const cache1 = new FileSystemCache({ basePath });
-    const cache2 = new FileSystemCache({ basePath });
+    using cache1 = FileSystemCache.disposable();
+    const cache2 = new FileSystemCache({ basePath: cache1.basePath });
     await cache1.set('text', 'my value');
     await cache1.set('number', 123);
     await cache1.set('object', { foo: 456 });
@@ -33,8 +28,8 @@ describe('get', () => {
   });
 
   it('reads a stored date', async () => {
-    const cache1 = new FileSystemCache({ basePath });
-    const cache2 = new FileSystemCache({ basePath });
+    using cache1 = FileSystemCache.disposable();
+    const cache2 = new FileSystemCache({ basePath: cache1.basePath });
     const now = new Date();
     await cache1.set('date', now);
     expect(await cache2.get('date')).to.eql(now);
@@ -42,7 +37,7 @@ describe('get', () => {
 
   describe('getSync', () => {
     it('reads a value synchonously', async () => {
-      const cache = new FileSystemCache({ basePath });
+      using cache = FileSystemCache.disposable();
       const now = new Date();
 
       await cache.set('date', now);
@@ -50,7 +45,7 @@ describe('get', () => {
     });
 
     it('returns a default value synchonously', () => {
-      const cache = new FileSystemCache({ basePath });
+      using cache = FileSystemCache.disposable();
       const result = cache.getSync('my-sync-value', { myDefault: 123 });
       expect(result).to.eql({ myDefault: 123 });
     });

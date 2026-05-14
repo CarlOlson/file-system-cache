@@ -1,15 +1,12 @@
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import * as fs from 'node:fs';
+import { describe, expect, it } from 'vitest';
 import { FileSystemCache } from '..';
-import { BasePath, Sleep, deleteTmpDir } from './common';
+import { Sleep } from './common';
 
 describe('expires', () => {
-  const basePath = BasePath.random();
-  beforeEach(() => deleteTmpDir(basePath));
-  afterAll(() => deleteTmpDir(basePath));
-
   it('cache does NOT expire (various types)', async () => {
-    const cache1 = new FileSystemCache({ basePath, ttl: 10 });
-    const cache2 = new FileSystemCache({ basePath, ttl: 10 });
+    using cache1 = FileSystemCache.disposable({ ttl: 10 });
+    const cache2 = new FileSystemCache({ basePath: cache1.basePath, ttl: 10 });
 
     await cache1.set('foo-1', 'bar-1');
     await cache1.set('foo-2', 'bar-2', 0);
@@ -23,8 +20,8 @@ describe('expires', () => {
   });
 
   it('cache DOES expires (various types)', async () => {
-    const cache1 = new FileSystemCache({ basePath, ttl: 0.3 });
-    const cache2 = new FileSystemCache({ basePath, ttl: 0.3 });
+    using cache1 = FileSystemCache.disposable({ ttl: 0.3 });
+    const cache2 = new FileSystemCache({ basePath: cache1.basePath, ttl: 0.3 });
 
     await cache1.set('number', 123);
     await cache1.set('object', { foo: 456 }, 1);
@@ -35,7 +32,7 @@ describe('expires', () => {
   });
 
   it('after expiring empty value is returned', async () => {
-    const cache = new FileSystemCache({ basePath, ttl: 0.3 });
+    using cache = FileSystemCache.disposable({ ttl: 0.3 });
     await cache.set('my-number', 123);
 
     const res1 = await cache.getSync('my-number');

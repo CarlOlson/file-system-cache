@@ -1,21 +1,16 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { FileSystemCache } from '..';
-import { BasePath, deleteTmpDir } from './common';
 
 describe('load', () => {
-  const basePath = BasePath.random();
-  beforeEach(() => deleteTmpDir(basePath));
-  afterAll(() => deleteTmpDir(basePath));
-
   it('loads no files', async () => {
-    const cache = new FileSystemCache({ basePath });
+    using cache = FileSystemCache.disposable();
     const result = await cache.load();
     expect(result.files).to.eql([]);
   });
 
   it('loads several files (no namespace)', async () => {
-    const cache1 = new FileSystemCache({ basePath });
-    const cache2 = new FileSystemCache({ basePath, ns: 'my-ns' });
+    using cache1 = FileSystemCache.disposable();
+    const cache2 = new FileSystemCache({ basePath: cache1.basePath, ns: 'my-ns' });
     cache1.setSync('foo', 1);
     cache1.setSync('bar', 'two');
     cache2.set('yo', 'ns-value');
