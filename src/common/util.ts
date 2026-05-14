@@ -2,11 +2,9 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as fsp from 'node:fs/promises';
 import * as fsPath from 'node:path';
-import * as R from 'ramda';
 import type * as t from '../types.ts';
 
-export const isNothing = (value: any) => R.isNil(value) || R.isEmpty(value);
-export const isString = R.is(String);
+export const isString = (value: unknown): value is string => typeof value === 'string';
 
 export const toAbsolutePath = (path: string) => {
   return path.startsWith('.') ? fsPath.resolve(path) : path;
@@ -15,13 +13,6 @@ export const toAbsolutePath = (path: string) => {
 export const ensureString = (defaultValue: string, text?: string): string => {
   return typeof text === 'string' ? text : defaultValue;
 };
-
-export const compact = (input: any[]): string[] => {
-  const flat = [].concat(...input);
-  return flat.filter((value) => !R.isNil(value));
-};
-
-export const toStringArray = R.pipe(compact, R.map(R.toString));
 
 export const isFileSync = (path: string) => {
   return fs.existsSync(path) ? fs.lstatSync(path).isFile() : false;
@@ -48,12 +39,11 @@ export const filePathsP = async (basePath: string, ns: string): Promise<string[]
  * Turns a set of values into a HEX hash code.
  * @param values: The set of values to hash.
  */
-export const hash = (algorithm: t.HashAlgorithm, ...values: any[]) => {
-  if (R.pipe(compact, R.isEmpty)(values)) return undefined;
+export const hash = (algorithm: t.HashAlgorithm, values: string | string[]) => {
+  const parts = Array.isArray(values) ? values : [values];
+  if (parts.length === 0) return undefined;
   const resultHash = crypto.createHash(algorithm);
-  const addValue = (value: any) => resultHash.update(value);
-  const addValues = R.forEach(addValue);
-  R.pipe(toStringArray, addValues)(values);
+  parts.forEach((value) => resultHash.update(value));
   return resultHash.digest('hex');
 };
 
@@ -90,7 +80,12 @@ export const toGetValue = (data: any) => {
  * Stringify a value into JSON.
  */
 export const toJson = (value: any, ttl: number) =>
-  JSON.stringify({ value, type: R.type(value), created: new Date(), ttl });
+  JSON.stringify({
+    value,
+    type: Object.prototype.toString.call(value).slice(8, -1),
+    created: new Date(),
+    ttl,
+  });
 
 /**
  * Check's a cache item to see if it has expired.

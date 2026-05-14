@@ -18,7 +18,6 @@ describe('load', () => {
 
     const files = (await cache1.load()).files;
     assert.equal(files.length, 2);
-    assert.equal(files[0].value, 'two');
-    assert.equal(files[1].value, 1);
+    assert.deepEqual(files.map((f) => f.value).sort(), [1, 'two']);
   });
 });

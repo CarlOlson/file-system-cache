@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+import * as assert from 'node:assert/strict';
 import * as crypto from 'node:crypto';
 import { describe, it } from 'node:test';
 import * as Util from '../common/util.ts';
@@ -6,30 +6,12 @@ import { FileSystemCache } from '../index.ts';
 import type * as t from '../types.ts';
 
 describe('common/util', () => {
-  it('compact', () => {
-    const input = ['one', undefined, ['two', undefined], [undefined, 'three']];
-    const res = Util.compact(input);
-    assert.deepEqual(res, ['one', 'two', 'three']);
-  });
-
   describe('util.hash', () => {
-    it("does not hash 'nothing' (undefined)", () => {
+    it('returns undefined for an empty array', () => {
       const test = (algorithm: t.HashAlgorithm) => {
-        assert.equal(Util.hash(algorithm), undefined);
-        assert.equal(Util.hash(algorithm, null), undefined);
-        assert.equal(Util.hash(algorithm, null, undefined), undefined);
-        assert.equal(Util.hash(algorithm, null, [undefined, null]), undefined);
+        assert.equal(Util.hash(algorithm, []), undefined);
       };
       FileSystemCache.hashAlgorithms.forEach(test);
-    });
-
-    it('returns a hash of multiple values', () => {
-      const test = (algorithm: t.HashAlgorithm, expected: string) => {
-        const result = Util.hash(algorithm, 'one', undefined, [3, 4], 2);
-        assert.equal(result, expected);
-      };
-      test('sha1', '0f161cb21daaa15962c1085855fe19dcb9df67e9');
-      test('sha256', 'c637bf7b330a578cd63a36d1d68c2345959591784dc08d35f249eb596de29c42');
     });
 
     it('returns a hash of a single value', () => {
@@ -37,19 +19,17 @@ describe('common/util', () => {
         const result = Util.hash(algorithm, 'one');
         assert.equal(result, expected);
       };
-      test('sha1', '443b7f970b6c6af26c392534c0a28ed4ad00a30e');
-      test('sha256', '49e9fcfb5617aad332d56d58ffd0c7020d29ec1d0d0a03b7d7c47f268820acf3');
+      test('sha1', 'fe05bcdcdc4928012781a5f1a2a77cbb5398e106');
+      test('sha256', '7692c3ad3540bb803c020b3aee66cd8887123234ea0c6e7143c0add73ff431ed');
     });
 
     it('returns a hash from an array', () => {
       const test = (algorithm: t.HashAlgorithm, expected: string) => {
-        const result1 = Util.hash(algorithm, 'one', 'two');
-        const result2 = Util.hash(algorithm, ['one', 'two']);
-        assert.equal(result1, expected);
-        assert.equal(result1, result2);
+        const result = Util.hash(algorithm, ['one', 'two']);
+        assert.equal(result, expected);
       };
-      test('sha1', '7fc87660c49692a9b11b02cb23cc478771ca3e3f');
-      test('sha256', 'c7d71a7239fceefe30f084ed730d02f609fe63024dc5cf57c674052efedd96ff');
+      test('sha1', '30ae97492ce1da88d0e7117ace0a60a6f9e1e0bc');
+      test('sha256', '25b6746d5172ed6352966a013d93ac846e1110d5a25e8f183b5931f4688842a1');
     });
   });
 

@@ -1,7 +1,6 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import * as R from 'ramda';
 import { hashAlgorithms } from './common/const.hashes.ts';
 import * as Util from './common/util.ts';
 import type * as t from './types.ts';
@@ -44,7 +43,7 @@ export class FileSystemCache {
     this.tmpDir = options.tmpDir;
     this.basePath = formatPath(options.basePath ?? options.tmpDir?.path);
     this.hash = options.hash ?? 'sha1';
-    this.ns = Util.hash(this.hash, options.ns);
+    this.ns = options.ns != null ? Util.hash(this.hash, options.ns) : undefined;
     this.ttl = options.ttl ?? 0;
     if (Util.isString(options.extension)) this.extension = options.extension;
 
@@ -62,7 +61,7 @@ export class FileSystemCache {
    * @param {string} key: The key of the cache item.
    */
   public path(key: string): string {
-    if (Util.isNothing(key)) throw new Error(`Path requires a cache key.`);
+    if (!Util.isString(key)) throw new Error(`Path requires a cache key.`);
     let name = Util.hash(this.hash, key);
     if (this.ns) name = `${this.ns}-${name}`;
     if (this.extension) name = `${name}.${this.extension.replace(/^\./, '')}`;
@@ -153,7 +152,7 @@ export class FileSystemCache {
     let items = (Array.isArray(input) ? input : [input]) as Item[];
 
     const isValid = (item: any) => {
-      if (!R.is(Object, item)) return false;
+      if (item == null || typeof item !== 'object') return false;
       return item.key && item.value;
     };
 

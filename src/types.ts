@@ -2,11 +2,13 @@ import type { HashAlgorithm } from './types.hashes';
 import type { DisposableTempDir } from 'node:fs';
 export type { HashAlgorithm };
 
+export type Namespace = string | string[];
+
 export type FileSystemCacheOptions =
   | {
       basePath?: string;
       tmpDir?: never;
-      ns?: any;
+      ns?: Namespace;
       ttl?: number;
       hash?: HashAlgorithm;
       extension?: string;
@@ -14,7 +16,7 @@ export type FileSystemCacheOptions =
   | {
       basePath?: never;
       tmpDir?: DisposableTempDir;
-      ns?: any;
+      ns?: Namespace;
       ttl?: number;
       hash?: HashAlgorithm;
       extension?: string;

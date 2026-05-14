@@ -63,12 +63,13 @@ describe('FileSystemCache', () => {
     });
 
     it('creates a namespace hash with several values', () => {
-      const cache1 = new FileSystemCache({ ns: ['foo', 123] });
-      const cache2 = new FileSystemCache({ ns: ['foo', 123], hash: 'sha256' });
-      const cache3 = new FileSystemCache({ ns: ['foo', 123], hash: 'sha512' });
-      assert.equal(cache1.ns, Util.hash('sha1', 'foo', 123));
-      assert.equal(cache2.ns, Util.hash('sha256', 'foo', 123));
-      assert.equal(cache3.ns, Util.hash('sha512', 'foo', 123));
+      const ns = ['foo', 'bar'];
+      const cache1 = new FileSystemCache({ ns });
+      const cache2 = new FileSystemCache({ ns, hash: 'sha256' });
+      const cache3 = new FileSystemCache({ ns, hash: 'sha512' });
+      assert.equal(cache1.ns, Util.hash('sha1', ns));
+      assert.equal(cache2.ns, Util.hash('sha256', ns));
+      assert.equal(cache3.ns, Util.hash('sha512', ns));
     });
   });
 
@@ -95,7 +96,7 @@ describe('FileSystemCache', () => {
     it('returns a path with a namespace', () => {
       const test = (hash: t.HashAlgorithm) => {
         const key = 'foo';
-        const ns = [1, 2];
+        const ns = ['one', 'two'];
         const file = `${Util.hash(hash, ns)}-${Util.hash(hash, key)}`;
 
         using cache = FileSystemCache.disposable({ ns, hash });
