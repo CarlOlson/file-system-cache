@@ -21,18 +21,18 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.js"
+      "types": "./lib/index.d.mts",
+      "import": "./lib/index.mjs"
     },
     "./package.json": "./package.json"
   },
-  "main": "./lib/index.js",
+  "main": "./lib/index.mjs",
   "files": [
     "README.md",
     "lib/**"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --clean --minify --dts --format esm --out-dir lib --treeshake",
+    "build": "tsdown src/index.ts --clean --minify --dts --out-dir lib",
     "format": "prettier ./src --write",
     "gen:hashtype": "node ./script.ts/generate-hashtype.ts",
     "prepublish": "npm test && npm run build",
@@ -43,11 +43,8 @@
     "@types/ramda": "^0.30.1",
     "prettier": "^3.3.3",
     "ramda": "^0.30.1",
-    "tsup": "^8.1.0",
-    "typescript": "^5.5.3"
-  },
-  "resolutions": {
-    "braces": ">=3.0.3"
+    "tsdown": "^0.22.0",
+    "typescript": "^6"
   },
   "packageManager": "yarn@1.22.19+sha512.ff4579ab459bb25aa7c0ff75b62acebe576f6084b36aa842971cf250a5d8c6cd3bc9420b22ce63c7f93a0857bc6ef29291db39c3e7a23aab5adfd5a4dd6c5d71"
 }
