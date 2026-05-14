@@ -19,7 +19,7 @@ export class FileSystemCache {
    */
   readonly tmpDir?: fs.DisposableTempDir;
   readonly basePath: string;
-  readonly ns?: t.Namespace;
+  readonly ns?: string;
   readonly extension?: string;
   readonly hash: t.HashAlgorithm;
   readonly ttl: number;
@@ -202,7 +202,7 @@ export class FileSystemCache {
  * Helpers
  */
 
-function formatPath(path?: string) {
+function formatPath(path?: string): string {
   path = Util.ensureString('./.cache', path);
   path = Util.toAbsolutePath(path);
   return path;
