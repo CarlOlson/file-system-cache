@@ -83,7 +83,7 @@ class FileSystemCache {
    */
   public getSync<T>(key: string, defaultValue?: T): T | undefined {
     const path = this.path(key);
-    return fs.existsSync(path) ? (Util.toGetValue(fs.readFileSync(path, 'utf8')) as T) : defaultValue;
+    return fs.existsSync(path) ? (Util.deserialize(fs.readFileSync(path)) as T) : defaultValue;
   }
 
   /**
@@ -95,7 +95,7 @@ class FileSystemCache {
     const path = this.path(key);
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     await this.ensureBasePath();
-    await fs.promises.writeFile(path, Util.toJson(value, ttl));
+    await fs.promises.writeFile(path, Util.serialize(value, ttl));
     return { path };
   }
 
@@ -108,7 +108,7 @@ class FileSystemCache {
   public setSync<T>(key: string, value: T, ttl?: number) {
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     fs.mkdirSync(this.basePath, { recursive: true });
-    fs.writeFileSync(this.path(key), Util.toJson(value, ttl));
+    fs.writeFileSync(this.path(key), Util.serialize(value, ttl));
     return this;
   }
 

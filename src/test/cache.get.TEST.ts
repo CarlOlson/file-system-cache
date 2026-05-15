@@ -36,6 +36,29 @@ describe('get', () => {
     assert.deepEqual(await cache2.get('date'), now);
   });
 
+  it('reads stored Date, Map, Set, and Buffer', async () => {
+    using cache1 = FileSystemCache.disposable();
+    const cache2 = new FileSystemCache({ basePath: cache1.basePath });
+
+    const date = new Date();
+    const map = new Map<string, number>([
+      ['one', 1],
+      ['two', 2],
+    ]);
+    const set = new Set([1, 2, 3]);
+    const buf = Buffer.from([0xde, 0xad, 0xbe, 0xef]);
+
+    await cache1.set('date', date);
+    await cache1.set('map', map);
+    await cache1.set('set', set);
+    await cache1.set('buffer', buf);
+
+    assert.deepEqual(await cache2.get('date'), date);
+    assert.deepEqual(await cache2.get('map'), map);
+    assert.deepEqual(await cache2.get('set'), set);
+    assert.deepEqual(await cache2.get('buffer'), buf);
+  });
+
   describe('getSync', () => {
     it('reads a value synchonously', async () => {
       using cache = FileSystemCache.disposable();

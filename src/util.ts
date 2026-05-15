@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as fsp from 'node:fs/promises';
 import * as fsPath from 'node:path';
+import * as v8 from 'node:v8';
 
 export const isString = (value: unknown): value is string => typeof value === 'string';
 
@@ -77,7 +78,7 @@ export const hash = (values: string | string[]) => {
  */
 export async function getValueP<T>(path: string, defaultValue?: T): Promise<T | undefined> {
   try {
-    return toGetValue(await fsp.readFile(path, 'utf8')) as T;
+    return deserialize(await fsp.readFile(path)) as T;
   } catch (error) {
     if (isErrnoException(error) && error.code === 'ENOENT') {
       return defaultValue;
@@ -91,35 +92,29 @@ export async function getValueP<T>(path: string, defaultValue?: T): Promise<T | 
 
 type CacheEntry = {
   value: unknown;
-  type: string;
-  created: string;
+  created: Date;
   ttl: number;
 };
 
 /**
- * Parse a cache entry's file contents and unwrap the stored value.
+ * Decode a cache entry buffer and unwrap the stored value.
  */
-export const toGetValue = (text: string): unknown => {
-  const data = JSON.parse(text) as CacheEntry;
+export const deserialize = (buf: Buffer): unknown => {
+  const data = v8.deserialize(buf) as CacheEntry;
   if (isExpired(data)) return undefined;
-  if (data.type === 'Date') return new Date(data.value as string);
   return data.value;
 };
 
 /**
- * Stringify a value into JSON.
+ * Encode a value into a cache entry buffer.
  */
-export function toJson<T>(value: T, ttl: number): string {
-  return JSON.stringify({
-    value,
-    type: Object.prototype.toString.call(value).slice(8, -1),
-    created: new Date(),
-    ttl,
-  });
+export function serialize<T>(value: T, ttl: number): Buffer {
+  const entry: CacheEntry = { value, created: new Date(), ttl };
+  return v8.serialize(entry);
 }
 
 const isExpired = (data: CacheEntry): boolean => {
-  const timeElapsed = (Date.now() - new Date(data.created).getTime()) / 1000;
+  const timeElapsed = (Date.now() - data.created.getTime()) / 1000;
   return timeElapsed > data.ttl && data.ttl > 0;
 };
 

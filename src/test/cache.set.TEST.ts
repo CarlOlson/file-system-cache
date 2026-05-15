@@ -12,7 +12,8 @@ describe('set', () => {
 
     const res = await cache.set('foo', value);
     assert.equal(res.path, path);
-    assert.ok(fs.readFileSync(path).toString().includes('my value'));
+    assert.ok(fs.existsSync(path));
+    assert.equal(await cache.get('foo'), value);
   });
 
   it('saves an object to the file-system', async () => {
@@ -20,10 +21,8 @@ describe('set', () => {
     const value = { text: 'hello', number: 123 };
 
     const res = await cache.set('foo', value);
-
-    const fileText = fs.readFileSync(res.path).toString();
-    assert.ok(fileText.includes('hello'));
-    assert.ok(fileText.includes('123'));
+    assert.ok(fs.existsSync(res.path));
+    assert.deepEqual(await cache.get('foo'), value);
   });
 
   it('setSync: saves a value synchonously', () => {
