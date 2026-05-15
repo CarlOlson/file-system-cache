@@ -104,14 +104,19 @@ type CacheEntry = {
 };
 
 /**
- * Decode a cache entry buffer and unwrap the stored value. When `expectedKey`
- * is provided, returns `undefined` on key mismatch (hash collision).
+ * Decode a cache entry buffer and unwrap the stored value. Returns `undefined`
+ * on key mismatch (hash collision), expiry, or any decoding failure (corrupt
+ * file, partial write, future v8 format from a Node downgrade).
  */
 export const deserialize = (buf: Buffer, expectedKey?: string): unknown => {
-  const data = v8.deserialize(buf) as CacheEntry;
-  if (expectedKey !== undefined && data.key !== expectedKey) return undefined;
-  if (isExpired(data)) return undefined;
-  return data.value;
+  try {
+    const data = v8.deserialize(buf) as CacheEntry;
+    if (expectedKey !== undefined && data.key !== expectedKey) return undefined;
+    if (isExpired(data)) return undefined;
+    return data.value;
+  } catch {
+    return undefined;
+  }
 };
 
 /**

@@ -73,6 +73,15 @@ describe('get', () => {
     assert.equal(cache.getSync('bar'), undefined);
   });
 
+  it('treats a corrupt cache file as a miss', async () => {
+    using cache = FileSystemCache.disposable();
+    await cache.ensureBasePath();
+    await fsp.writeFile(cache.path('foo'), Buffer.from('not a v8 payload'));
+
+    assert.equal(await cache.get('foo'), undefined);
+    assert.equal(cache.getSync('foo'), undefined);
+  });
+
   describe('getSync', () => {
     it('reads a value synchonously', async () => {
       using cache = FileSystemCache.disposable();
