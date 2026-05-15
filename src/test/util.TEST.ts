@@ -1,10 +1,10 @@
 import * as assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import * as Util from '../common/util.ts';
+import * as Util from '../util.ts';
 import { FileSystemCache } from '../index.ts';
 import type * as t from '../types.ts';
 
-describe('common/util', () => {
+describe('util', () => {
   describe('util.hash', () => {
     it('returns undefined for an empty array', () => {
       const test = (algorithm: t.HashAlgorithm) => {

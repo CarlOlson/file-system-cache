@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { describe, it } from 'node:test';
-import * as Util from '../common/util.ts';
+import * as Util from '../util.ts';
 import { FileSystemCache } from '../index.ts';
 import type * as t from '../types.ts';
 

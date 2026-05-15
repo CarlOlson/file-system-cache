@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import * as Util from './common/util.ts';
+import * as Util from './util.ts';
 import type * as t from './types.ts';
 
 /**
@@ -41,7 +41,7 @@ export class FileSystemCache {
    */
   constructor(options: t.FileSystemCacheOptions = {}) {
     this.tmpDir = options.tmpDir;
-    this.basePath = formatPath(options.basePath ?? options.tmpDir?.path);
+    this.basePath = Util.formatPath(options.basePath ?? options.tmpDir?.path);
     this.hash = options.hash ?? 'sha1';
     this.ns = options.ns != null ? Util.hash(this.hash, options.ns) : undefined;
     this.ttl = options.ttl ?? 0;
@@ -168,14 +168,4 @@ export class FileSystemCache {
       throw new Error(`Do not use with 'using' declaration except via FileSystemCache.disposable()`);
     }
   }
-}
-
-/**
- * Helpers
- */
-
-function formatPath(path?: string): string {
-  path = Util.ensureString('./.cache', path);
-  path = Util.toAbsolutePath(path);
-  return path;
 }

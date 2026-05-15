@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import * as Util from '../common/util.ts';
+import * as Util from '../util.ts';
 import { FileSystemCache } from '../index.ts';
 
 describe('remove', () => {
