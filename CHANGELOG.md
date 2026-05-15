@@ -7,22 +7,24 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [next] - YYYY-MM-DD
 #### Added
 #### Changed
+- changes cache file format (JSON → v8 binary); existing `.cache/` directories will silently fail to read
+- hash output completely changed (sha1 hex → cyrb53 base36) — any external tooling reading cache filenames breaks
+- output file renamed from `lib/index.mjs` to `lib/FileSystemCache.mjs`
+- `load` now returns an AsyncIterator
 #### Deprecated
 #### Removed
+- removes `hash` option, `FileSystemCache.hashAlgorithms`, `save()`, `fileExists()`
 #### Fixed
 #### Security
-
-
 
 ## [3.0.0] - 2024-07-16
 #### Changed
 - converted to ESM (thanks to @ndelangen on PR#47)
 
 
-
 ## [2.4.7] - 2024-07-16
 #### Fixed
-- revert to bundle that supports `require('file-system-cache')` on patch-release 
+- revert to bundle that supports `require('file-system-cache')` on patch-release
   version number prior to re-releasing the ESM build on the next major version (see 3.0).
 
 

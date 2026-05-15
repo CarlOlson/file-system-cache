@@ -19,6 +19,10 @@ import Cache from 'file-system-cache';
 import { Cache } from 'file-system-cache';
 ```
 
+## Security
+
+This uses `v8.deserialize` which may be unsafe for untrusted inputs.  Don't point the cache at an untrusted directory.  For local tooling this is unlikely to be a concern.  For a production server you'll likely want to JSON serialize user inputs to avoid parser bugs since `JSON.stringify` is much more battle tested.
+
 ## Usage (API)
 
 Create an instance of the cache optionally giving it a folder location to store files within.
@@ -97,9 +101,3 @@ Loads all files within the cache's namespace.
 cache.load()
   .then(result => /* The complete of cached files (for the ns). */)
 ```
-
-
-
-## Test
-    # Run tests.
-    npm test

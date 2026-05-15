@@ -37,6 +37,7 @@ class FileSystemCache {
     this.ttl = options.ttl ?? 0;
     if (Util.isString(options.extension)) this.extension = options.extension.replace(/^\./, '');
 
+    // TODO consider defering this to `set`
     if (Util.isFileSync(this.basePath)) {
       throw new Error(`The basePath '${this.basePath}' is a file. It should be a folder.`);
     }
@@ -168,6 +169,7 @@ class FileSystemCache {
     if (this.tmpDir) {
       this.tmpDir[Symbol.dispose]();
     } else {
+      // Error is thrown to prevent users expecting cleanup when using 'new'
       throw new Error(`Do not use with 'using' declaration except via FileSystemCache.disposable()`);
     }
   }

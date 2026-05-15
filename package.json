@@ -48,5 +48,8 @@
     "tsdown": "^0.22.0",
     "typescript": "^6"
   },
+  "engines": {
+    "node": ">=24.4.0"
+  },
   "packageManager": "yarn@4.14.1"
 }
