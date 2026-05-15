@@ -57,6 +57,16 @@ class FileSystemCache {
   /**
    * Ensure that the base path exists.
    */
+  public ensureBasePathSync() {
+    if (!this.tmpDir && !this.basePathExists) {
+      fs.mkdirSync(this.basePath, { recursive: true });
+      this.basePathExists = true;
+    }
+  }
+
+  /**
+   * Ensure that the base path exists.
+   */
   public async ensureBasePath() {
     if (!this.tmpDir && !this.basePathExists) {
       await fs.promises.mkdir(this.basePath, { recursive: true });
@@ -107,7 +117,7 @@ class FileSystemCache {
    */
   public setSync<T>(key: string, value: T, ttl?: number) {
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
-    fs.mkdirSync(this.basePath, { recursive: true });
+    this.ensureBasePathSync();
     fs.writeFileSync(this.path(key), Util.serialize(key, value, ttl));
     return this;
   }
