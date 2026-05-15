@@ -71,13 +71,12 @@ describe('FileSystemCache', () => {
       assert.equal(cache.path(key), path.join(cache.basePath, file as string));
     });
 
-    it('returns a path with a namespace', () => {
+    it('returns a path with a namespace (namespaced subdirectory)', () => {
       const key = 'foo';
       const ns = ['one', 'two'];
-      const file = `${Util.hash(ns)}-${Util.hash(key)}`;
 
       using cache = FileSystemCache.disposable({ ns });
-      assert.equal(cache.path(key), path.join(cache.basePath, file));
+      assert.equal(cache.path(key), path.join(cache.basePath, Util.hash(ns) as string, Util.hash(key)));
     });
 
     it('returns a path with a file extension', () => {

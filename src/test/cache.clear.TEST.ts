@@ -16,6 +16,16 @@ describe('clear', () => {
     assert.equal(fs.readdirSync(cache.basePath).length, 0);
   });
 
+  it('clears entries when extension contains a dash', async () => {
+    using cache = FileSystemCache.disposable({ extension: 'my-ext' });
+    await cache.set('foo', 'a');
+    await cache.set('bar', 'b');
+    assert.equal(fs.readdirSync(cache.basePath).length, 2);
+
+    await cache.clear();
+    assert.equal(fs.readdirSync(cache.basePath).length, 0);
+  });
+
   describe('with namespace', () => {
     it('clears all items without namespace - protects non-namespace items', async () => {
       using cache1 = FileSystemCache.disposable();

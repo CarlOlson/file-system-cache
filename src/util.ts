@@ -18,18 +18,13 @@ export const isFileSync = (path: string) => {
 };
 
 export const filePathsP = async (basePath: string, ns?: string): Promise<string[]> => {
+  const dir = ns ? fsPath.join(basePath, ns) : basePath;
   try {
-    return (await fsp.readdir(basePath))
-      .filter(Boolean)
-      .filter((name) => (ns ? name.startsWith(ns) : true))
-      .filter((name) => (!ns ? !name.includes('-') : true))
-      .map((name) => `${basePath}/${name}`);
+    const entries = await fsp.readdir(dir, { withFileTypes: true });
+    return entries.filter((entry) => entry.isFile()).map((entry) => fsPath.join(dir, entry.name));
   } catch (error) {
-    if (isErrnoException(error) && error.code === 'ENOENT') {
-      return [];
-    } else {
-      throw error;
-    }
+    if (isErrnoException(error) && error.code === 'ENOENT') return [];
+    throw error;
   }
 };
 

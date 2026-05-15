@@ -49,29 +49,30 @@ class FileSystemCache {
   public path(key: string): string {
     if (!Util.isString(key)) throw new Error(`Path requires a cache key.`);
     let name = Util.hash(key);
-    if (this.ns) name = `${this.ns}-${name}`;
     if (this.extension) name = `${name}.${this.extension}`;
-    return path.join(this.basePath, name);
+    return this.ns ? path.join(this.basePath, this.ns, name) : path.join(this.basePath, name);
+  }
+
+  private writeDir(): string {
+    return this.ns ? path.join(this.basePath, this.ns) : this.basePath;
   }
 
   /**
-   * Ensure that the base path exists.
+   * Ensure that the directory where entries are written exists.
    */
   public ensureBasePathSync() {
-    if (!this.tmpDir && !this.basePathExists) {
-      fs.mkdirSync(this.basePath, { recursive: true });
-      this.basePathExists = true;
-    }
+    if (this.basePathExists) return;
+    fs.mkdirSync(this.writeDir(), { recursive: true });
+    this.basePathExists = true;
   }
 
   /**
-   * Ensure that the base path exists.
+   * Ensure that the directory where entries are written exists.
    */
   public async ensureBasePath() {
-    if (!this.tmpDir && !this.basePathExists) {
-      await fs.promises.mkdir(this.basePath, { recursive: true });
-      this.basePathExists = true;
-    }
+    if (this.basePathExists) return;
+    await fs.promises.mkdir(this.writeDir(), { recursive: true });
+    this.basePathExists = true;
   }
 
   /**
@@ -131,11 +132,18 @@ class FileSystemCache {
   }
 
   /**
-   * Removes all items from the cache.
+   * Removes all items from the cache. For a namespaced cache this removes the
+   * namespace directory entirely; for a non-namespaced cache it removes the
+   * flat entries (leaving any sibling namespace subdirectories intact).
    */
   public async clear() {
-    const paths = await Util.filePathsP(this.basePath, this.ns);
-    await Promise.all(paths.map((path) => fs.promises.rm(path, { force: true })));
+    if (this.ns) {
+      await fs.promises.rm(path.join(this.basePath, this.ns), { recursive: true, force: true });
+      this.basePathExists = false;
+    } else {
+      const paths = await Util.filePathsP(this.basePath);
+      await Promise.all(paths.map((p) => fs.promises.rm(p, { force: true })));
+    }
   }
 
   /**
