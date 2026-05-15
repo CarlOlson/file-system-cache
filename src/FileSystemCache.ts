@@ -33,7 +33,7 @@ class FileSystemCache {
   constructor(options: t.FileSystemCacheOptions = {}) {
     this.tmpDir = options.tmpDir;
     this.basePath = Util.formatPath(options.basePath ?? options.tmpDir?.path);
-    this.ns = options.ns != null ? Util.hash(options.ns) : undefined;
+    this.ns = options.ns ? Util.hash(options.ns as string[]) : undefined;
     this.ttl = options.ttl ?? 0;
     if (Util.isString(options.extension)) this.extension = options.extension.replace(/^\./, '');
 
@@ -51,7 +51,7 @@ class FileSystemCache {
     let name = Util.hash(key);
     if (this.ns) name = `${this.ns}-${name}`;
     if (this.extension) name = `${name}.${this.extension}`;
-    return `${this.basePath}/${name}`;
+    return path.join(this.basePath, name);
   }
 
   /**

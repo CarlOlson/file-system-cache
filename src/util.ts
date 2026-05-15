@@ -63,16 +63,15 @@ function cyrb53String(str: string, seed: number = 0): string {
 }
 
 /**
- * Turns a set of values into a HEX hash code.
- * @param values: The set of values to hash.
+ * Hash a string or array of strings into a filename-safe identifier.
+ * An empty array returns `undefined`; all other inputs return an 11-char hash.
  */
-export const hash = (values: string | string[]) => {
-  if (Array.isArray(values) && values.length === 0) {
-    return undefined;
-  } else {
-    return cyrb53String(Array.isArray(values) ? values.join() : values);
-  }
-};
+export function hash(values: string): string;
+export function hash(values: string[]): string | undefined;
+export function hash(values: string | string[]): string | undefined {
+  if (Array.isArray(values) && values.length === 0) return undefined;
+  return cyrb53String(Array.isArray(values) ? values.join() : values);
+}
 
 /**
  * Retrieve a value from the given path. When `expectedKey` is provided, the
