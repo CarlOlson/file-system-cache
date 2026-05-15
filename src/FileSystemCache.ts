@@ -141,19 +141,19 @@ class FileSystemCache {
       await fs.promises.rm(path.join(this.basePath, this.ns), { recursive: true, force: true });
       this.basePathExists = false;
     } else {
-      const paths = await Util.filePathsP(this.basePath);
-      await Promise.all(paths.map((p) => fs.promises.rm(p, { force: true })));
+      for await (const p of Util.filePaths(this.basePath)) {
+        await fs.promises.rm(p, { force: true });
+      }
     }
   }
 
   /**
    * Loads all files within the cache's namespace.
    */
-  public async load(): Promise<{ files: { path: string; value: unknown }[] }> {
-    const paths = await Util.filePathsP(this.basePath, this.ns);
-    if (paths.length === 0) return { files: [] };
-    const files = await Promise.all(paths.map(async (path) => ({ path, value: await Util.getValueP(path) })));
-    return { files };
+  public async *load(): AsyncIterable<{ path: string; value: unknown }> {
+    for await (const p of Util.filePaths(this.basePath, this.ns)) {
+      yield { path: p, value: await Util.getValueP(p) };
+    }
   }
 
   /**

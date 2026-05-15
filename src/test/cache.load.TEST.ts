@@ -5,8 +5,8 @@ import { FileSystemCache } from '../FileSystemCache.ts';
 describe('load', () => {
   it('loads no files', async () => {
     using cache = FileSystemCache.disposable();
-    const result = await cache.load();
-    assert.deepEqual(result.files, []);
+    const files = await Array.fromAsync(cache.load());
+    assert.deepEqual(files, []);
   });
 
   it('loads several files (no namespace)', async () => {
@@ -16,7 +16,7 @@ describe('load', () => {
     cache1.setSync('bar', 'two');
     cache2.set('yo', 'ns-value');
 
-    const files = (await cache1.load()).files;
+    const files = await Array.fromAsync(cache1.load());
     assert.equal(files.length, 2);
     assert.deepEqual(files.map((f) => f.value).sort(), [1, 'two']);
   });

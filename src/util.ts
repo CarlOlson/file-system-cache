@@ -17,16 +17,19 @@ export const isFileSync = (path: string) => {
   return fs.existsSync(path) ? fs.lstatSync(path).isFile() : false;
 };
 
-export const filePathsP = async (basePath: string, ns?: string): Promise<string[]> => {
+export async function* filePaths(basePath: string, ns?: string): AsyncIterable<string> {
   const dir = ns ? fsPath.join(basePath, ns) : basePath;
+  let handle: fs.Dir;
   try {
-    const entries = await fsp.readdir(dir, { withFileTypes: true });
-    return entries.filter((entry) => entry.isFile()).map((entry) => fsPath.join(dir, entry.name));
+    handle = await fsp.opendir(dir);
   } catch (error) {
-    if (isErrnoException(error) && error.code === 'ENOENT') return [];
+    if (isErrnoException(error) && error.code === 'ENOENT') return;
     throw error;
   }
-};
+  for await (const entry of handle) {
+    if (entry.isFile()) yield fsPath.join(dir, entry.name);
+  }
+}
 
 /**
  * cyrb53 (c) 2018 bryc (github.com/bryc)
