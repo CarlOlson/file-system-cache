@@ -72,7 +72,7 @@ class FileSystemCache {
    *         undefined if the file does not exist.
    */
   public get<T>(key: string, defaultValue?: T): Promise<T | undefined> {
-    return Util.getValueP(this.path(key), defaultValue);
+    return Util.getValueP(this.path(key), defaultValue, key);
   }
 
   /**
@@ -83,7 +83,7 @@ class FileSystemCache {
    */
   public getSync<T>(key: string, defaultValue?: T): T | undefined {
     const path = this.path(key);
-    return fs.existsSync(path) ? (Util.deserialize(fs.readFileSync(path)) as T) : defaultValue;
+    return fs.existsSync(path) ? (Util.deserialize(fs.readFileSync(path), key) as T) : defaultValue;
   }
 
   /**
@@ -95,7 +95,7 @@ class FileSystemCache {
     const path = this.path(key);
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     await this.ensureBasePath();
-    await fs.promises.writeFile(path, Util.serialize(value, ttl));
+    await fs.promises.writeFile(path, Util.serialize(key, value, ttl));
     return { path };
   }
 
@@ -108,7 +108,7 @@ class FileSystemCache {
   public setSync<T>(key: string, value: T, ttl?: number) {
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     fs.mkdirSync(this.basePath, { recursive: true });
-    fs.writeFileSync(this.path(key), Util.serialize(value, ttl));
+    fs.writeFileSync(this.path(key), Util.serialize(key, value, ttl));
     return this;
   }
 

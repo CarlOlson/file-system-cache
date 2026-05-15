@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import * as fsp from 'node:fs/promises';
 import { describe, it } from 'node:test';
 import { FileSystemCache } from '../FileSystemCache.ts';
+import * as Util from '../util.ts';
 
 describe('get', () => {
   it('file not exist on the file-system', async () => {
@@ -57,6 +59,18 @@ describe('get', () => {
     assert.deepEqual(await cache2.get('map'), map);
     assert.deepEqual(await cache2.get('set'), set);
     assert.deepEqual(await cache2.get('buffer'), buf);
+  });
+
+  it('returns undefined on hash collision (key mismatch)', async () => {
+    using cache = FileSystemCache.disposable();
+    await cache.ensureBasePath();
+
+    // Simulate a hash collision: write an entry tagged with key 'foo' at the
+    // filename that key 'bar' would resolve to.
+    await fsp.writeFile(cache.path('bar'), Util.serialize('foo', 'wrong-value', 0));
+
+    assert.equal(await cache.get('bar'), undefined);
+    assert.equal(cache.getSync('bar'), undefined);
   });
 
   describe('getSync', () => {

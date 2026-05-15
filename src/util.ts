@@ -74,11 +74,17 @@ export const hash = (values: string | string[]) => {
 };
 
 /**
- * Retrieve a value from the given path.
+ * Retrieve a value from the given path. When `expectedKey` is provided, the
+ * stored entry's key must match it — otherwise the file is treated as a miss
+ * (covers hash collisions where two distinct keys map to the same filename).
  */
-export async function getValueP<T>(path: string, defaultValue?: T): Promise<T | undefined> {
+export async function getValueP<T>(
+  path: string,
+  defaultValue?: T,
+  expectedKey?: string,
+): Promise<T | undefined> {
   try {
-    return deserialize(await fsp.readFile(path)) as T;
+    return deserialize(await fsp.readFile(path), expectedKey) as T;
   } catch (error) {
     if (isErrnoException(error) && error.code === 'ENOENT') {
       return defaultValue;
@@ -91,25 +97,29 @@ export async function getValueP<T>(path: string, defaultValue?: T): Promise<T | 
 }
 
 type CacheEntry = {
+  key: string;
   value: unknown;
   created: Date;
   ttl: number;
 };
 
 /**
- * Decode a cache entry buffer and unwrap the stored value.
+ * Decode a cache entry buffer and unwrap the stored value. When `expectedKey`
+ * is provided, returns `undefined` on key mismatch (hash collision).
  */
-export const deserialize = (buf: Buffer): unknown => {
+export const deserialize = (buf: Buffer, expectedKey?: string): unknown => {
   const data = v8.deserialize(buf) as CacheEntry;
+  if (expectedKey !== undefined && data.key !== expectedKey) return undefined;
   if (isExpired(data)) return undefined;
   return data.value;
 };
 
 /**
- * Encode a value into a cache entry buffer.
+ * Encode a value into a cache entry buffer. The original key is stored so
+ * reads can detect hash collisions.
  */
-export function serialize<T>(value: T, ttl: number): Buffer {
-  const entry: CacheEntry = { value, created: new Date(), ttl };
+export function serialize<T>(key: string, value: T, ttl: number): Buffer {
+  const entry: CacheEntry = { key, value, created: new Date(), ttl };
   return v8.serialize(entry);
 }
 
