@@ -126,7 +126,6 @@ class FileSystemCache {
   public async clear() {
     const paths = await Util.filePathsP(this.basePath, this.ns);
     await Promise.all(paths.map((path) => fs.promises.rm(path, { force: true })));
-    console.groupEnd();
   }
 
   /**
