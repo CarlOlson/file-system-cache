@@ -55,10 +55,11 @@ function cyrb53(str: string, seed: number = 0): number {
 }
 
 /**
- * Returns a filename safe cyrb53 hash of input string
+ * Returns a filename safe cyrb53 hash of input string, padded to a fixed
+ * 11-char width (max length of a 53-bit integer in base36).
  */
 function cyrb53String(str: string, seed: number = 0): string {
-  return Number(cyrb53(str, seed)).toString(36);
+  return cyrb53(str, seed).toString(36).padStart(11, '0');
 }
 
 /**

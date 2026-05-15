@@ -13,7 +13,13 @@ describe('util', () => {
     });
 
     it('returns a hash from an array', () => {
-      assert.equal(Util.hash(['one', 'two']), 'dyegaowfnv');
+      assert.equal(Util.hash(['one', 'two']), '0dyegaowfnv');
+    });
+
+    it('pads short hashes to a fixed width', () => {
+      for (const input of ['', 'a', 'foo', 'hello world', 'cache-key-12345']) {
+        assert.equal(Util.hash(input)?.length, 11);
+      }
     });
   });
 });
