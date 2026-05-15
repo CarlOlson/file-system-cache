@@ -35,7 +35,7 @@ class FileSystemCache {
     this.basePath = Util.formatPath(options.basePath ?? options.tmpDir?.path);
     this.ns = options.ns != null ? Util.hash(options.ns) : undefined;
     this.ttl = options.ttl ?? 0;
-    if (Util.isString(options.extension)) this.extension = options.extension;
+    if (Util.isString(options.extension)) this.extension = options.extension.replace(/^\./, '');
 
     if (Util.isFileSync(this.basePath)) {
       throw new Error(`The basePath '${this.basePath}' is a file. It should be a folder.`);
@@ -50,7 +50,7 @@ class FileSystemCache {
     if (!Util.isString(key)) throw new Error(`Path requires a cache key.`);
     let name = Util.hash(key);
     if (this.ns) name = `${this.ns}-${name}`;
-    if (this.extension) name = `${name}.${this.extension.replace(/^\./, '')}`;
+    if (this.extension) name = `${name}.${this.extension}`;
     return `${this.basePath}/${name}`;
   }
 
