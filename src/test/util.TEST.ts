@@ -1,7 +1,7 @@
 import * as assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import * as Util from '../util.ts';
-import { FileSystemCache } from '../index.ts';
+import { FileSystemCache } from '../FileSystemCache.ts';
 import type * as t from '../types.ts';
 
 describe('util', () => {

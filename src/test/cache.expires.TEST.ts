@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { FileSystemCache } from '../index.ts';
+import { FileSystemCache } from '../FileSystemCache.ts';
 import { Sleep } from './common.ts';
 
 describe('expires', () => {

@@ -4,7 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { describe, it } from 'node:test';
 import * as Util from '../util.ts';
-import { FileSystemCache } from '../index.ts';
+import { FileSystemCache } from '../FileSystemCache.ts';
 import type * as t from '../types.ts';
 
 describe('FileSystemCache', () => {

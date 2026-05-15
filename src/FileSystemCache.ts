@@ -8,7 +8,7 @@ import type * as t from './types.ts';
 /**
  * A cache that read/writes to a specific part of the file-system.
  */
-export class FileSystemCache {
+class FileSystemCache {
   /**
    * The list of all available hash algorithms.
    */
@@ -169,3 +169,6 @@ export class FileSystemCache {
     }
   }
 }
+
+export default (options?: t.FileSystemCacheOptions) => new FileSystemCache(options);
+export { FileSystemCache, FileSystemCache as Cache };

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import * as Util from '../util.ts';
-import { FileSystemCache } from '../index.ts';
+import { FileSystemCache } from '../FileSystemCache.ts';
 
 describe('remove', () => {
   it('removes the file from the file-system', async () => {

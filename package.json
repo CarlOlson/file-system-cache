@@ -21,18 +21,18 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./lib/index.d.mts",
-      "import": "./lib/index.mjs"
+      "types": "./lib/FileSystemCache.d.mts",
+      "import": "./lib/FileSystemCache.mjs"
     },
     "./package.json": "./package.json"
   },
-  "main": "./lib/index.mjs",
+  "main": "./lib/FileSystemCache.mjs",
   "files": [
     "README.md",
     "lib/**"
   ],
   "scripts": {
-    "build": "tsdown src/index.ts --clean --minify --dts --out-dir lib",
+    "build": "tsdown src/FileSystemCache.ts --clean --minify --dts --out-dir lib",
     "check": "biome check",
     "check:fix": "biome check --write",
     "format": "biome format --write",
