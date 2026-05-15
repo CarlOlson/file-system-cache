@@ -1,4 +1,3 @@
-import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -10,18 +9,12 @@ import type * as t from './types.ts';
  */
 class FileSystemCache {
   /**
-   * The list of all available hash algorithms.
-   */
-  static hashAlgorithms: t.HashAlgorithm[] = crypto.getHashes();
-
-  /**
    * Instance.
    */
   readonly tmpDir?: fs.DisposableTempDir;
   readonly basePath: string;
   readonly ns?: string;
   readonly extension?: string;
-  readonly hash: t.HashAlgorithm;
   readonly ttl: number;
   basePathExists?: boolean;
 
@@ -36,23 +29,16 @@ class FileSystemCache {
    *            - extension:  An optional file-extension for paths.
    *            - ttl:        The default time-to-live for cached values in seconds.
    *                          Default: 0 (never expires)
-   *            - hash:       The hashing algorithm to use when generating cache keys.
-   *                          Default: "sha1"
    */
   constructor(options: t.FileSystemCacheOptions = {}) {
     this.tmpDir = options.tmpDir;
     this.basePath = Util.formatPath(options.basePath ?? options.tmpDir?.path);
-    this.hash = options.hash ?? 'sha1';
-    this.ns = options.ns != null ? Util.hash(this.hash, options.ns) : undefined;
+    this.ns = options.ns != null ? Util.hash(options.ns) : undefined;
     this.ttl = options.ttl ?? 0;
     if (Util.isString(options.extension)) this.extension = options.extension;
 
     if (Util.isFileSync(this.basePath)) {
       throw new Error(`The basePath '${this.basePath}' is a file. It should be a folder.`);
-    }
-
-    if (!Util.hashExists(this.hash)) {
-      throw new Error(`Hash does not exist: ${this.hash}`);
     }
   }
 
@@ -62,7 +48,7 @@ class FileSystemCache {
    */
   public path(key: string): string {
     if (!Util.isString(key)) throw new Error(`Path requires a cache key.`);
-    let name = Util.hash(this.hash, key);
+    let name = Util.hash(key);
     if (this.ns) name = `${this.ns}-${name}`;
     if (this.extension) name = `${name}.${this.extension.replace(/^\./, '')}`;
     return `${this.basePath}/${name}`;

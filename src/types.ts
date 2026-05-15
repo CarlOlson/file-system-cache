@@ -1,7 +1,5 @@
 import type { DisposableTempDir } from 'node:fs';
 
-export type HashAlgorithm = string;
-
 export type Namespace = string | string[];
 
 export type FileSystemCacheOptions =
@@ -10,7 +8,6 @@ export type FileSystemCacheOptions =
       tmpDir?: never;
       ns?: Namespace;
       ttl?: number;
-      hash?: HashAlgorithm;
       extension?: string;
     }
   | {
@@ -18,6 +15,5 @@ export type FileSystemCacheOptions =
       tmpDir?: DisposableTempDir;
       ns?: Namespace;
       ttl?: number;
-      hash?: HashAlgorithm;
       extension?: string;
     };

@@ -3,23 +3,16 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { describe, it } from 'node:test';
-import * as Util from '../util.ts';
 import { FileSystemCache } from '../FileSystemCache.ts';
-import type * as t from '../types.ts';
+import * as Util from '../util.ts';
 
 describe('FileSystemCache', () => {
   describe('constructor', () => {
     it('defaults', () => {
       using cache = FileSystemCache.disposable();
-      assert.equal(cache.hash, 'sha1');
       assert.equal(cache.ttl, 0);
       assert.equal(cache.ns, undefined);
       assert.equal(cache.extension, undefined);
-    });
-
-    it('throw: hash not supported', () => {
-      const hash = '404-no-exist' as t.HashAlgorithm;
-      assert.throws(() => new FileSystemCache({ hash }), /Hash does not exist/);
     });
   });
 
@@ -53,22 +46,14 @@ describe('FileSystemCache', () => {
     });
 
     it('creates a namespace hash with a single value', () => {
-      const cache1 = new FileSystemCache({ ns: 'foo' });
-      const cache2 = new FileSystemCache({ ns: 'foo', hash: 'sha256' });
-      const cache3 = new FileSystemCache({ ns: 'foo', hash: 'sha512' });
-      assert.equal(cache1.ns, Util.hash('sha1', 'foo'));
-      assert.equal(cache2.ns, Util.hash('sha256', 'foo'));
-      assert.equal(cache3.ns, Util.hash('sha512', 'foo'));
+      const cache = new FileSystemCache({ ns: 'foo' });
+      assert.equal(cache.ns, Util.hash('foo'));
     });
 
     it('creates a namespace hash with several values', () => {
       const ns = ['foo', 'bar'];
-      const cache1 = new FileSystemCache({ ns });
-      const cache2 = new FileSystemCache({ ns, hash: 'sha256' });
-      const cache3 = new FileSystemCache({ ns, hash: 'sha512' });
-      assert.equal(cache1.ns, Util.hash('sha1', ns));
-      assert.equal(cache2.ns, Util.hash('sha256', ns));
-      assert.equal(cache3.ns, Util.hash('sha512', ns));
+      const cache = new FileSystemCache({ ns });
+      assert.equal(cache.ns, Util.hash(ns));
     });
   });
 
@@ -79,53 +64,35 @@ describe('FileSystemCache', () => {
     });
 
     it('returns a path with no namespace', () => {
-      const test = (hash: t.HashAlgorithm) => {
-        const key = 'foo';
-        const file = Util.hash(hash, key);
+      const key = 'foo';
+      const file = Util.hash(key);
 
-        using cache = FileSystemCache.disposable({ hash });
-        assert.equal(cache.path(key), path.join(cache.basePath, file));
-      };
-
-      test('sha1');
-      test('sha256');
-      test('sha512');
+      using cache = FileSystemCache.disposable();
+      assert.equal(cache.path(key), path.join(cache.basePath, file as string));
     });
 
     it('returns a path with a namespace', () => {
-      const test = (hash: t.HashAlgorithm) => {
-        const key = 'foo';
-        const ns = ['one', 'two'];
-        const file = `${Util.hash(hash, ns)}-${Util.hash(hash, key)}`;
+      const key = 'foo';
+      const ns = ['one', 'two'];
+      const file = `${Util.hash(ns)}-${Util.hash(key)}`;
 
-        using cache = FileSystemCache.disposable({ ns, hash });
-        assert.equal(cache.path(key), path.join(cache.basePath, file));
-      };
-
-      test('sha1');
-      test('sha256');
-      test('sha512');
+      using cache = FileSystemCache.disposable({ ns });
+      assert.equal(cache.path(key), path.join(cache.basePath, file));
     });
 
     it('returns a path with a file extension', () => {
-      const test = (hash: t.HashAlgorithm) => {
-        const key = 'foo';
-        const file = `${Util.hash(hash, key)}.styl`;
+      const key = 'foo';
+      const file = `${Util.hash(key)}.styl`;
 
-        {
-          using cache = FileSystemCache.disposable({ hash, extension: 'styl' });
-          assert.equal(cache.path(key), path.join(cache.basePath, file));
-        }
+      {
+        using cache = FileSystemCache.disposable({ extension: 'styl' });
+        assert.equal(cache.path(key), path.join(cache.basePath, file));
+      }
 
-        {
-          using cache = FileSystemCache.disposable({ hash, extension: '.styl' });
-          assert.equal(cache.path(key), path.join(cache.basePath, file));
-        }
-      };
-
-      test('sha1');
-      test('sha256');
-      test('sha512');
+      {
+        using cache = FileSystemCache.disposable({ extension: '.styl' });
+        assert.equal(cache.path(key), path.join(cache.basePath, file));
+      }
     });
   });
 
