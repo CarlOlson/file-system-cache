@@ -1,83 +1,88 @@
 import { bench, run, summary, do_not_optimize } from 'mitata';
 import { FileSystemCache } from './FileSystemCache.ts';
 
-summary(() => {
-  bench('async set', function* (state) {
-    const concurrency = state.get('concurrency');
-    const size = state.get('size');
-    const keys = Array.from({ length: size }).map((_, i) => `async-${i}`);
-    let index = 0;
+bench('async set $compress', function* (state) {
+  const compress = state.get('compress');
+  const concurrency = state.get('concurrency');
+  const size = state.get('size');
+  const keys = Array.from({ length: size }).map((_, i) => `async-${i}`);
+  let index = 0;
 
-    using cache = FileSystemCache.disposable();
-    for (const key of keys) cache.setSync(key, { value: 'hello world' });
+  using cache = FileSystemCache.disposable({ compress: compress === 'zstd' });
+  for (const key of keys) cache.setSync(key, { value: 'hello world' });
 
-    yield {
-      concurrency,
+  yield {
+    concurrency,
 
-      async bench() {
-        const key = keys[index++];
-        if (index >= size) index = 0;
-        return do_not_optimize(await cache.set(key, { value: 'hello world' }));
-      },
-    };
-  })
-    .args('size', [100])
-    .args('concurrency', [1]);
-
-  bench('sync set', function* (state) {
-    const size = state.get('size');
-    const keys = Array.from({ length: size }).map((_, i) => `sync-${i}`);
-    let index = 0;
-
-    using cache = FileSystemCache.disposable();
-    for (const key of keys) cache.setSync(key, { value: 'hello world' });
-
-    yield () => {
+    async bench() {
       const key = keys[index++];
       if (index >= size) index = 0;
-      return do_not_optimize(cache.setSync(key, { value: 'hello world' }));
-    };
-  }).args('size', [100]);
-});
+      return do_not_optimize(await cache.set(key, { value: 'hello world' }));
+    },
+  };
+})
+  .args('size', [100])
+  .args('concurrency', [1])
+  .args('compress', ['', 'zstd']);
 
-summary(() => {
-  bench('async get', function* (state) {
-    const concurrency = state.get('concurrency');
+bench('sync set $compress', function* (state) {
+  const compress = state.get('compress');
+  const size = state.get('size');
+  const keys = Array.from({ length: size }).map((_, i) => `sync-${i}`);
+  let index = 0;
 
-    const size = state.get('size');
-    const keys = Array.from({ length: size }).map((_, i) => `async-${i}`);
-    let index = 0;
+  using cache = FileSystemCache.disposable({ compress: compress === 'zstd' });
+  for (const key of keys) cache.setSync(key, { value: 'hello world' });
 
-    using cache = FileSystemCache.disposable();
-    for (const key of keys) cache.setSync(key, { value: 'hello world' });
+  yield () => {
+    const key = keys[index++];
+    if (index >= size) index = 0;
+    return do_not_optimize(cache.setSync(key, { value: 'hello world' }));
+  };
+})
+  .args('size', [100])
+  .args('compress', ['', 'zstd']);
 
-    yield {
-      concurrency,
+bench('async get $compress', function* (state) {
+  const compress = state.get('compress');
+  const concurrency = state.get('concurrency');
+  const size = state.get('size');
+  const keys = Array.from({ length: size }).map((_, i) => `async-${i}`);
+  let index = 0;
 
-      async bench() {
-        const key = keys[index++];
-        if (index >= size) index = 0;
-        return do_not_optimize(await cache.get(key));
-      },
-    };
-  })
-    .args('size', [100])
-    .args('concurrency', [1]);
+  using cache = FileSystemCache.disposable({ compress: compress === 'zstd' });
+  for (const key of keys) cache.setSync(key, { value: 'hello world' });
 
-  bench('sync get', function* (state) {
-    const size = state.get('size');
-    const keys = Array.from({ length: size }).map((_, i) => `sync-${i}`);
-    let index = 0;
+  yield {
+    concurrency,
 
-    using cache = FileSystemCache.disposable();
-    for (const key of keys) cache.setSync(key, { value: 'hello world' });
-
-    yield () => {
+    async bench() {
       const key = keys[index++];
       if (index >= size) index = 0;
-      return do_not_optimize(cache.getSync(key));
-    };
-  }).args('size', [100]);
-});
+      return do_not_optimize(await cache.get(key));
+    },
+  };
+})
+  .args('size', [100])
+  .args('concurrency', [1])
+  .args('compress', ['', 'zstd']);
+
+bench('sync get $compress', function* (state) {
+  const compress = state.get('compress');
+  const size = state.get('size');
+  const keys = Array.from({ length: size }).map((_, i) => `sync-${i}`);
+  let index = 0;
+
+  using cache = FileSystemCache.disposable({ compress: compress === 'zstd' });
+  for (const key of keys) cache.setSync(key, { value: 'hello world' });
+
+  yield () => {
+    const key = keys[index++];
+    if (index >= size) index = 0;
+    return do_not_optimize(cache.getSync(key));
+  };
+})
+  .args('size', [100])
+  .args('compress', ['', 'zstd']);
 
 await run();

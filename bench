@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Example usage: sudo ./bench
+
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+perf_event_paranoid=`cat /proc/sys/kernel/perf_event_paranoid`
+echo "perf_event_paranoid=$perf_event_paranoid"
+
+randomize_va_space=`cat /proc/sys/kernel/randomize_va_space`
+echo "randomize_va_space=$randomize_va_space"
+
+power_profile=`powerprofilesctl get`
+echo "power_profile=$power_profile"
+
+if [ "$perf_event_paranoid" -gt 2 ]; then
+    echo "`/proc/sys/kernel/perf_event_paranoid` has to be set to 2 or lower"
+    exit 1
+fi
+
+function cleanup(){
+    echo "Graceful exiting..."
+    sudo bash -c "echo $randomize_va_space > /proc/sys/kernel/randomize_va_space"
+    powerprofilesctl set $power_profile
+}
+trap cleanup EXIT
+
+sudo bash -c 'echo 0 > /proc/sys/kernel/randomize_va_space'
+
+sudo powerprofilesctl set performance
+
+nice -19 yarn node --expose-gc --allow-natives-syntax src/bench.js
