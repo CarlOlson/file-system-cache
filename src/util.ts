@@ -1,7 +1,10 @@
 import * as fs from 'node:fs';
 import * as fsp from 'node:fs/promises';
 import * as fsPath from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import * as v8 from 'node:v8';
+import * as zlib from 'node:zlib';
 
 export const isString = (value: unknown): value is string => typeof value === 'string';
 
@@ -80,9 +83,12 @@ export async function getValueP<T>(
   path: string,
   defaultValue?: T,
   expectedKey?: string,
+  compress?: boolean
 ): Promise<T | undefined> {
   try {
-    return deserialize(await fsp.readFile(path), expectedKey) as T;
+    const buf = compress ? await readDecompressed(path) : await fsp.readFile(path);
+    if (buf === undefined) return undefined;
+    return deserialize(buf, expectedKey) as T;
   } catch (error) {
     if (isErrnoException(error) && error.code === 'ENOENT') {
       return defaultValue;
@@ -92,6 +98,33 @@ export async function getValueP<T>(
       throw error;
     }
   }
+}
+
+/**
+ * Stream a zstd-compressed file from disk through a decompressor, concatenating
+ * the decoded chunks. The compressed payload is never held fully in memory.
+ * Returns `undefined` if the file is not a valid zstd stream (treated as a
+ * corrupt-cache miss by callers).
+ */
+async function readDecompressed(path: string): Promise<Buffer | undefined> {
+  const chunks: Buffer[] = [];
+  try {
+    await pipeline(fs.createReadStream(path), zlib.createZstdDecompress(), async (source) => {
+      for await (const chunk of source) chunks.push(chunk as Buffer);
+    });
+  } catch (error) {
+    if (isErrnoException(error) && error.code === 'ENOENT') throw error;
+    return undefined;
+  }
+  return Buffer.concat(chunks);
+}
+
+/**
+ * Stream a buffer through a zstd compressor to disk. Avoids holding the full
+ * compressed payload in memory — chunks flow to the file as they are produced.
+ */
+export async function writeCompressed(path: string, buf: Buffer): Promise<void> {
+  await pipeline(Readable.from(buf), zlib.createZstdCompress(), fs.createWriteStream(path));
 }
 
 type CacheEntry = {
@@ -125,6 +158,9 @@ export function serialize<T>(key: string, value: T, ttl: number): Buffer {
   const entry: CacheEntry = { key, value, created: new Date(), ttl };
   return v8.serialize(entry);
 }
+
+export const compressSync = (buf: Buffer): Buffer => zlib.zstdCompressSync(buf) as Buffer;
+export const decompressSync = (buf: Buffer): Buffer => zlib.zstdDecompressSync(buf) as Buffer;
 
 const isExpired = (data: CacheEntry): boolean => {
   const timeElapsed = (Date.now() - data.created.getTime()) / 1000;

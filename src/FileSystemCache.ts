@@ -16,6 +16,7 @@ class FileSystemCache {
   readonly ns?: string;
   readonly extension?: string;
   readonly ttl: number;
+  readonly compress: boolean;
   basePathExists?: boolean;
 
   /**
@@ -29,12 +30,16 @@ class FileSystemCache {
    *            - extension:  An optional file-extension for paths.
    *            - ttl:        The default time-to-live for cached values in seconds.
    *                          Default: 0 (never expires)
+   *            - compress:   Whether to zstd-compress cache entries on disk.
+   *                          Compressed files get a trailing `.zst` extension.
+   *                          Default: true
    */
   constructor(options: t.FileSystemCacheOptions = {}) {
     this.tmpDir = options.tmpDir;
     this.basePath = Util.formatPath(options.basePath ?? options.tmpDir?.path);
     this.ns = options.ns ? Util.hash(options.ns as string[]) : undefined;
     this.ttl = options.ttl ?? 0;
+    this.compress = options.compress ?? true;
     if (Util.isString(options.extension)) this.extension = options.extension.replace(/^\./, '');
 
     // TODO consider defering this to `set`
@@ -51,6 +56,7 @@ class FileSystemCache {
     if (!Util.isString(key)) throw new Error(`Path requires a cache key.`);
     let name = Util.hash(key);
     if (this.extension) name = `${name}.${this.extension}`;
+    if (this.compress) name = `${name}.zst`;
     return this.ns ? path.join(this.basePath, this.ns, name) : path.join(this.basePath, name);
   }
 
@@ -84,7 +90,7 @@ class FileSystemCache {
    *         undefined if the file does not exist.
    */
   public get<T>(key: string, defaultValue?: T): Promise<T | undefined> {
-    return Util.getValueP(this.path(key), defaultValue, key);
+    return Util.getValueP(this.path(key), defaultValue, key, this.compress);
   }
 
   /**
@@ -95,7 +101,16 @@ class FileSystemCache {
    */
   public getSync<T>(key: string, defaultValue?: T): T | undefined {
     const path = this.path(key);
-    return fs.existsSync(path) ? (Util.deserialize(fs.readFileSync(path), key) as T) : defaultValue;
+    if (!fs.existsSync(path)) return defaultValue;
+    let buf: Buffer = fs.readFileSync(path);
+    if (this.compress) {
+      try {
+        buf = Util.decompressSync(buf);
+      } catch {
+        return undefined;
+      }
+    }
+    return Util.deserialize(buf, key) as T;
   }
 
   /**
@@ -107,7 +122,12 @@ class FileSystemCache {
     const path = this.path(key);
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     await this.ensureBasePath();
-    await fs.promises.writeFile(path, Util.serialize(key, value, ttl));
+    const buf = Util.serialize(key, value, ttl);
+    if (this.compress) {
+      await Util.writeCompressed(path, buf);
+    } else {
+      await fs.promises.writeFile(path, buf);
+    }
     return { path };
   }
 
@@ -120,7 +140,9 @@ class FileSystemCache {
   public setSync<T>(key: string, value: T, ttl?: number) {
     ttl = typeof ttl === 'number' ? ttl : this.ttl;
     this.ensureBasePathSync();
-    fs.writeFileSync(this.path(key), Util.serialize(key, value, ttl));
+    let buf = Util.serialize(key, value, ttl);
+    if (this.compress) buf = Util.compressSync(buf);
+    fs.writeFileSync(this.path(key), buf);
     return this;
   }
 
@@ -153,7 +175,7 @@ class FileSystemCache {
    */
   public async *load(): AsyncIterable<{ path: string; value: unknown }> {
     for await (const p of Util.filePaths(this.basePath, this.ns)) {
-      yield { path: p, value: await Util.getValueP(p) };
+      yield { path: p, value: await Util.getValueP(p, undefined, undefined, this.compress) };
     }
   }
 

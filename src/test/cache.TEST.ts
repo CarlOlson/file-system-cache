@@ -13,6 +13,7 @@ describe('FileSystemCache', () => {
       assert.equal(cache.ttl, 0);
       assert.equal(cache.ns, undefined);
       assert.equal(cache.extension, undefined);
+      assert.equal(cache.compress, true);
     });
   });
 
@@ -67,7 +68,7 @@ describe('FileSystemCache', () => {
       const key = 'foo';
       const file = Util.hash(key);
 
-      using cache = FileSystemCache.disposable();
+      using cache = FileSystemCache.disposable({ compress: false });
       assert.equal(cache.path(key), path.join(cache.basePath, file as string));
     });
 
@@ -75,7 +76,7 @@ describe('FileSystemCache', () => {
       const key = 'foo';
       const ns = ['one', 'two'];
 
-      using cache = FileSystemCache.disposable({ ns });
+      using cache = FileSystemCache.disposable({ ns, compress: false });
       assert.equal(cache.path(key), path.join(cache.basePath, Util.hash(ns) as string, Util.hash(key)));
     });
 
@@ -84,13 +85,25 @@ describe('FileSystemCache', () => {
       const file = `${Util.hash(key)}.styl`;
 
       {
-        using cache = FileSystemCache.disposable({ extension: 'styl' });
+        using cache = FileSystemCache.disposable({ extension: 'styl', compress: false });
         assert.equal(cache.path(key), path.join(cache.basePath, file));
       }
 
       {
-        using cache = FileSystemCache.disposable({ extension: '.styl' });
+        using cache = FileSystemCache.disposable({ extension: '.styl', compress: false });
         assert.equal(cache.path(key), path.join(cache.basePath, file));
+      }
+    });
+
+    it('appends .zst when compression is enabled', () => {
+      const key = 'foo';
+      {
+        using cache = FileSystemCache.disposable();
+        assert.equal(cache.path(key), path.join(cache.basePath, `${Util.hash(key)}.zst`));
+      }
+      {
+        using cache = FileSystemCache.disposable({ extension: 'styl' });
+        assert.equal(cache.path(key), path.join(cache.basePath, `${Util.hash(key)}.styl.zst`));
       }
     });
   });

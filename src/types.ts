@@ -9,6 +9,7 @@ export type FileSystemCacheOptions =
       ns?: Namespace;
       ttl?: number;
       extension?: string;
+      compress?: boolean;
     }
   | {
       basePath?: never;
@@ -16,4 +17,5 @@ export type FileSystemCacheOptions =
       ns?: Namespace;
       ttl?: number;
       extension?: string;
+      compress?: boolean;
     };
